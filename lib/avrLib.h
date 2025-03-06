@@ -25,6 +25,9 @@ void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Deaktivert
 }
 
 void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(uint16_t prescaler, uint16_t timeintervall_ms){
+    
+    ///     1 opersasjon      ///
+
     //side 80, Table 38.
 
     //Regn ut n_OCRn for OCRn for å utføre compare match i Timer0
@@ -37,7 +40,7 @@ void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(uint16_t prescaler
     TCCR0 = (1<<WGM01);
     
 
-    ///     ///     ///
+    ///     2 opersasjon      ///
  
 
     // side 216, Table 84
@@ -118,6 +121,4 @@ int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16
 
     return bit_description;
 }
-
-
 
