@@ -25,11 +25,14 @@ void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Deaktivert
 }
 
 void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(uint16_t prescaler, uint16_t timeintervall_ms){
+    
+    ///     1 opersasjon      ///
+
     //side 80, Table 38.
 
     //Regn ut n_OCRn for OCRn for å utføre compare match i Timer0
     uint16_t time_period = 1/(F_CPU/prescaler);
-    uint16_t TCNT0 = round((timeintervall_ms/1000)/time_period);
+    TCNT0 = round((timeintervall_ms/1000)/time_period);
 
     //OBS OBS!!! TCNT0 vil ikke bli høyere enn 255 ettersom 8 bit.
      
@@ -37,7 +40,7 @@ void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(uint16_t prescaler
     TCCR0 = (1<<WGM01);
     
 
-    ///     ///     ///
+    ///     2 opersasjon      ///
  
 
     // side 216, Table 84
