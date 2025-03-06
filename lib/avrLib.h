@@ -101,5 +101,3 @@ int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16
     return bit_description;
 }
 
-
-
