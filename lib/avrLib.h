@@ -1,6 +1,7 @@
 // biblotek for avr prosjekter
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <math.h>
 #include <stdlib.h>
 
 void ADC_Prescaler_Selections(uint8_t bit){
@@ -23,7 +24,22 @@ void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Deaktivert
     for(uint8_t i = 0; i<size; i++) ADMUX ^= (1<<ADCn_porter_du_Onsker_Deaktivert[i]);
 }
 
-void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(){
+void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(uint16_t prescaler, uint16_t timeintervall_ms){
+    //side 80, Table 38.
+
+    //Regn ut n_OCRn for OCRn for å utføre compare match i Timer0
+    uint16_t time_period = 1/(F_CPU/prescaler);
+    uint16_t TCNT0 = round((timeintervall_ms/1000)/time_period);
+
+    //OBS OBS!!! TCNT0 vil ikke bli høyere enn 255 ettersom 8 bit.
+     
+    //Enable CTC for T0
+    TCCR0 = (1<<WGM01);
+    
+
+    ///     ///     ///
+ 
+
     // side 216, Table 84
 
     //legg til ønsket tidsintervall
@@ -34,6 +50,8 @@ void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(){
     //side 218, Table 86 ADC Auto Trigger Source
     SFIOR ^= (1<<ADTS2)|(1<<ADTS1)|(1<<ADTS0); //Clears register
     SFIOR |= (1<<ADTS1)|(1<<ADTS0); //Enables T0 Compare match Trigger source
+
+
 }
 
 int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16_t bit_description){
