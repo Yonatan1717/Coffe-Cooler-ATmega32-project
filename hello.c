@@ -9,6 +9,7 @@ unsigned char TCCR1B = 0;
 
 unsigned char ADCH = 0;
 unsigned char ADCL = 0;
+unsigned char DDRB = 0;
  
 
 
@@ -112,12 +113,22 @@ short int ADC_differencial(){
     return vADC;
 }
 
+void ACTIVATE_REGISTERS(unsigned char *DDRx_Register, unsigned char DDxn[]){ //E.g. DDRC, DDC0, DDC3, DDC5
+
+
+    unsigned char size_DDxn = sizeof(DDxn); //DDR which you desire to set to
+
+    for(unsigned char i = 0; i<size_DDxn; i++){
+        *DDRx_Register |= (1<<DDxn[i]);
+    }
+
+}
 
 int main(){
-    ADCH = 0b00000001;
-    ADCL = 0b10010101;
+    unsigned char activate[] = {0,1,2};
+    ACTIVATE_REGISTERS(&DDRB, activate);
 
-    printf("%i, %i", ADC_differencial(), (short int) 0b000000110010101);
+    printf("%i",DDRB);
 
     return 0;
 }

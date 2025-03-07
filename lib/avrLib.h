@@ -20,13 +20,19 @@ void Input_Channel_and_Gain_Selection_E(uint8_t ADCn_porter_du_Onsker_Aktivert_i
     for(uint8_t i = 0; ADCn_porter_du_Onsker_Aktivert_i_Stignede_rekke_folge[i] != 0 || i == 0; i++) ADMUX |= (1<<ADCn_porter_du_Onsker_Aktivert_i_Stignede_rekke_folge[i]);
 }
 
+// 3
+void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Daktivert_i_Stignede_rekke_folge[]){
+    // side 214, tabell 84, kan også brukes til å aktivere alle andre bits i ADMUX
+
+    for(uint8_t i = 0; ADCn_porter_du_Onsker_Daktivert_i_Stignede_rekke_folge[i] != 0 || i == 0; i++) ADMUX ^= (1<<ADCn_porter_du_Onsker_Daktivert_i_Stignede_rekke_folge[i]);
+}
+
 // 7
 void ADC_Noise_Reduction_Mode_E(){
     MCUCR = (1<<SM0);
 }
 
-
-
+// 4
 void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(uint16_t prescaler, uint16_t timeintervall_ms){
     
     ///     Sets T0 CTC mode and calculates OCRn value for compare match      ///
@@ -131,13 +137,13 @@ void ACTIVATE_REGISTERS(uint8_t DDRx_Register, uint8_t DDxn[]){ //E.g. DDRC, DDC
     uint8_t size_DDxn = sizeof(DDxn); //DDR which you desire to set to
 
     for(uint8_t i = 0; i<size_DDxn; i++){
-        DDRx_Register |= (1<<DDxn[i];
+        DDRx_Register |= (1<<DDxn[i]);
     }
 
 }
 
 // 9
-void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(uint8_t difference, uint8_t PORT_NAME,uint8_t PORT_NAMES[]){
+void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(uint8_t V_Difference, uint8_t PORT_NAME,uint8_t PORT_NAMES[]){
     //ADDS 2500 to V_difference since SWITCH statements can't be zero
     uint8_t difference = ((V_Difference+2500)/1000);
 
