@@ -44,3 +44,8 @@ libraries by scanning project source files.
 
 More information about PlatformIO Library Dependency Finder
 - https://docs.platformio.org/page/librarymanager/ldf.html
+
+exit status code:
+  1: ugyldig timer/clock Number -> 5
+  2: ugyldig bit description -> 5
+  3: ugyldig ADC prescaler selection bit -> 1

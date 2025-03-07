@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 unsigned char ADMUX = 0;
 
@@ -125,10 +126,13 @@ void ACTIVATE_REGISTERS(unsigned char *DDRx_Register, unsigned char DDxn[]){ //E
 }
 
 int main(){
-    unsigned char activate[] = {0,1,2};
-    ACTIVATE_REGISTERS(&DDRB, activate);
+    // unsigned char activate[] = {0,1,2};
+    // ACTIVATE_REGISTERS(&DDRB, activate);
 
-    printf("%i",DDRB);
+    unsigned short hello = round((250000/1024));
+    unsigned short hello2 = round((250*1000)/1024);
+
+    printf("%i,,%i", hello, hello2);
 
     return 0;
 }
