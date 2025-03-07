@@ -8,9 +8,12 @@
 // 1
 void ADC_Prescaler_Selections(uint8_t bit){
     // side 217, Table 85
-
-    if(bit == 8) ADCSRA |= (1<<ADPS1) | (1<<ADPS0);
-    else ADCSRA |= (1<<ADPS2);
+    ADCSRA &= ~((1<<0));
+    ADCSRA &= ~((1<<1));
+    ADCSRA &= ~((1<<2));
+    
+    if(bit == 8) ADCSRA |= (1<<1) | (1<<0);
+    else ADCSRA |= (1<<2);
 }
 
 // 2
@@ -21,10 +24,9 @@ void Input_Channel_and_Gain_Selection_E(uint8_t ADCn_porter_du_Onsker_Aktivert_i
 }
 
 // 3
-void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Daktivert_i_Stignede_rekke_folge[]){
-    // side 214, tabell 84, kan også brukes til å aktivere alle andre bits i ADMUX
-
-    for(uint8_t i = 0; ADCn_porter_du_Onsker_Daktivert_i_Stignede_rekke_folge[i] != 0 || i == 0; i++) ADMUX ^= (1<<ADCn_porter_du_Onsker_Daktivert_i_Stignede_rekke_folge[i]);
+void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Deaktivert_i_Stignede_rekke_folge[]){
+    // side 214, tabell 84, kan også brukes til å deaktivere alle andre bits i ADMUX
+    for(uint8_t i = 0; ADCn_porter_du_Onsker_Deaktivert_i_Stignede_rekke_folge[i] != 0 || i == 0; i++) ADMUX ^= (1<<ADCn_porter_du_Onsker_Deaktivert_i_Stignede_rekke_folge[i]);
 }
 
 // 7
@@ -126,18 +128,18 @@ int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16
         default:
             exit(2);
     }
-    
+
     return bit_description;
 }
 
 // 8
-void ACTIVATE_REGISTERS(uint8_t DDRx_Register, uint8_t DDxn[]){ //E.g. DDRC, DDC0, DDC3, DDC5
+void ACTIVATE_REGISTERS(uint8_t *DDRx_Register, uint8_t DDxn[]){ //E.g. DDRC, DDC0, DDC3, DDC5
 
 
     uint8_t size_DDxn = sizeof(DDxn); //DDR which you desire to set to
 
     for(uint8_t i = 0; i<size_DDxn; i++){
-        DDRx_Register |= (1<<DDxn[i]);
+        *DDRx_Register |= (1<<DDxn[i]);
     }
 
 }
@@ -166,3 +168,21 @@ void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(uint8_t V_Difference, uint8_t POR
         }
 }
 
+// 10
+int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
+    // side 217
+    
+    //add lavere byte av resultat til ADC 
+    int16_t ADC_resultat = ADCL;
+    //add høyre byte av resultat til ADC
+    ADC_resultat |= (ADCH<<8);
+
+    if ((ADC_resultat & (1<<9)))
+    {
+        ADC_resultat |= (0b11111100 <<8);
+    }
+
+    int16_t vq = (Vref/pow(2,(bitsUsed_10_or_8-1))) * (ADC_resultat+1/2);
+    
+    return vq;
+}
