@@ -1,0 +1,5 @@
+//Requirements
+//ADC noise reduction mode
+//ADC auto trigger with measurement taken after 262 ms 
+//Switch statements instead of if statements
+
