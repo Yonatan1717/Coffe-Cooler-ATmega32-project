@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 #define NoiseReduse MCUCR = (1<<SM0)
-#define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRX, DDxn_liste)
-
+#define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRx, DDxn_liste)
+#define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs) LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
 // 1
 void ADC_Prescaler_Selections(uint8_t bit){
     // side 217, Table 85
@@ -143,25 +143,25 @@ void ACTIVATE_REGISTERS(uint8_t *DDRx_Register, uint8_t DDxn[]){ //E.g. DDRC, DD
 }
 
 // 9
-void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(uint8_t V_Difference, uint8_t PORT_NAME,uint8_t PORT_NAMES[]){
+void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(uint8_t V_Difference, uint8_t *PORT_NAME,uint8_t PORT_NAMES[]){
     //ADDS 2500 to V_difference since SWITCH statements can't be zero
     uint8_t difference = ((V_Difference+2500)/1000);
 
         switch(difference){
         case 0:
-            PORT_NAME = (1<<PORT_NAMES[0]);
+            *PORT_NAME = (1<<PORT_NAMES[0]);
             break;
         case 1:
-            PORT_NAME = (1<<PORT_NAMES[1]);
+            *PORT_NAME = (1<<PORT_NAMES[1]);
             break;
         case 2:
-            PORT_NAME = (1<<PORT_NAMES[2]);
+            *PORT_NAME = (1<<PORT_NAMES[2]);
             break;
         case 3:
-            PORT_NAME = (1<<PORT_NAMES[3]);
+            *PORT_NAME = (1<<PORT_NAMES[3]);
             break;
         case 4:
-            PORT_NAME = (1<<PORT_NAMES[4]);
+            *PORT_NAME = (1<<PORT_NAMES[4]);
             break;
         }
 }
