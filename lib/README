@@ -1,6 +1,6 @@
 Git Commands:
-  !! Alltid sjekk at du er i main før du begynner å kode bruk <command: git status> -> dette vil fortelle deg 
-     hvilken branch du er i.
+  !! Alltid sjekk at du er i main før du begynner å kode bruk <command: git status> -> den vil fortelle deg 
+     hvilken branch du er i om du er oppdatert med forhold til "orgin" og om du har noe du må "commite".
 
   for å registrer egne endringer for commit:
     command: git add < (.) for alle endreinger> eller <fil navn du ønsker registrer endringen til> 
