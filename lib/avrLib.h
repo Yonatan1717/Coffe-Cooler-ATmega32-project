@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 
+// 1
 void ADC_Prescaler_Selections(uint8_t bit){
     // side 217, Table 85
 
@@ -12,17 +13,11 @@ void ADC_Prescaler_Selections(uint8_t bit){
     else ADCSRA |= (1<<ADPS2);
 }
 
-void Input_Channel_and_Gain_Selection_E(uint8_t ADCn_porter_du_Onsker_Aktivert[]){
-    // side 124, tabell 84, kan også brukes til å aktivere alle andre bits i ADMUX
+// 2
+void Input_Channel_and_Gain_Selection_E(uint8_t ADCn_porter_du_Onsker_Aktivert_i_Stignede_rekke_folge[]){
+    // side 214, tabell 84, kan også brukes til å aktivere alle andre bits i ADMUX
 
-    uint8_t size = sizeof(ADCn_porter_du_Onsker_Aktivert);
-    for(uint8_t i = 0; i<size; i++) ADMUX |= (1<<ADCn_porter_du_Onsker_Aktivert[i]);
-}
-void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Deaktivert[]){
-    // side 125, tabell 84, kan også brukes til å deaktivere alle andre bits i ADMUX
-
-    uint8_t size = sizeof(ADCn_porter_du_Onsker_Deaktivert);
-    for(uint8_t i = 0; i<size; i++) ADMUX ^= (1<<ADCn_porter_du_Onsker_Deaktivert[i]);
+    for(uint8_t i = 0; ADCn_porter_du_Onsker_Aktivert_i_Stignede_rekke_folge[i] != 0 || i == 0; i++) ADMUX |= (1<<ADCn_porter_du_Onsker_Aktivert_i_Stignede_rekke_folge[i]);
 }
 
 // 7
@@ -63,6 +58,7 @@ void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(uint16_t prescaler
 
 }
 
+// 5
 int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16_t bit_description){
     // side 127 tabell 54 for clock 2
     // side 110 tabell 48 for clock 1
