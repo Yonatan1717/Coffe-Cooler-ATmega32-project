@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+
 void ADC_Prescaler_Selections(uint8_t bit){
     // side 217, Table 85
 
@@ -24,12 +25,11 @@ void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Deaktivert
     for(uint8_t i = 0; i<size; i++) ADMUX ^= (1<<ADCn_porter_du_Onsker_Deaktivert[i]);
 }
 
+// 7
 void ADC_Noise_Reduction_Mode_E(){
     MCUCR = (1<<SM0);
 }
-void ADC_Noise_Reduction_Mode_D(){
-    
-}
+
 
 
 void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(uint16_t prescaler, uint16_t timeintervall_ms){
@@ -128,7 +128,10 @@ int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16
     return bit_description;
 }
 
+// 8
 void ACTIVATE_REGISTERS(uint8_t DDRx_Register, uint8_t DDxn[]){ //E.g. DDRC, DDC0, DDC3, DDC5
+
+
     uint8_t size_DDxn = sizeof(DDxn); //DDR which you desire to set to
 
     for(uint8_t i = 0; i<size_DDxn; i++){
@@ -137,35 +140,27 @@ void ACTIVATE_REGISTERS(uint8_t DDRx_Register, uint8_t DDxn[]){ //E.g. DDRC, DDC
 
 }
 
-void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(uint8_t PORT_NAME,uint8_t PORT_NAMES[],uint8_t difference){
+// 9
+void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(uint8_t difference, uint8_t PORT_NAME,uint8_t PORT_NAMES[]){
     //ADDS 2500 to V_difference since SWITCH statements can't be zero
     uint8_t difference = ((V_Difference+2500)/1000);
-    switch(difference){
-    case 0:
-        PORT_NAME = (1<<PORT_NAMES[0]);
-        break;
-    
-    }
-    case 1:
-        PORT_NAME = (1<<PORT_NAMES[1]);
-        break;
-    
-    }
-    case 2:
-        PORT_NAME = (1<<PORT_NAMES[2]);
-        break;
-    
-    }
-    case 3:
-        PORT_NAME = (1<<PORT_NAMES[3]);
-        break;
-    
-    }
-    case 4:
-        PORT_NAME = (1<<PORT_NAMES[4]);
-        break;
-    
-    }
 
+        switch(difference){
+        case 0:
+            PORT_NAME = (1<<PORT_NAMES[0]);
+            break;
+        case 1:
+            PORT_NAME = (1<<PORT_NAMES[1]);
+            break;
+        case 2:
+            PORT_NAME = (1<<PORT_NAMES[2]);
+            break;
+        case 3:
+            PORT_NAME = (1<<PORT_NAMES[3]);
+            break;
+        case 4:
+            PORT_NAME = (1<<PORT_NAMES[4]);
+            break;
+        }
 }
 
