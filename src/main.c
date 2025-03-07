@@ -6,7 +6,7 @@
 uint8_t enable_output_port_B[] = {0,1,2,3,4};
 ISR(ADC_vect){
     int16_t diff_Result = ADC_differencial(5000,10);
-    LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(diff_Result,PORTB,enable_output_port_B);
+    LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(diff_Result,PORTB,enable_output_port_B);
 }
 int main(){
     NoiseReduse;
