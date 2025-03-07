@@ -11,6 +11,8 @@ unsigned char TCCR1B = 0;
 unsigned char ADCH = 0;
 unsigned char ADCL = 0;
 unsigned char DDRB = 0;
+
+unsigned char SFIOR = 7;
  
 
 
@@ -129,10 +131,13 @@ int main(){
     // unsigned char activate[] = {0,1,2};
     // ACTIVATE_REGISTERS(&DDRB, activate);
 
-    unsigned short hello = round((250000/1024));
-    unsigned short hello2 = round((250*1000)/1024);
+    // unsigned short hello = round((250000/1024));
+    // unsigned short hello2 = round((250*1000)/1024);
+    printf("%i", SFIOR);
+    SFIOR &= ~((1<<2)|(1<<1)|(1<<0)); //Clears register
+    // SFIOR |= (1<<1)|(1<<0); //Enables T0 Compare match Trigger source
 
-    printf("%i,,%i", hello, hello2);
+    printf("%i", SFIOR);
 
     return 0;
 }
