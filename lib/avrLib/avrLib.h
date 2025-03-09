@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define NoiseReduse MCUCR = (1<<SM0) // side 32, tabell 13
+#define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
 #define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRx, DDxn_liste)
 #define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs) LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
 // 1
@@ -154,6 +154,9 @@ void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile ui
         case 4:
             *PORT_NAME = (1<<PORT_NAMES[4]);
             break;
+        default:
+            ACTIVATE_REGISTERS(PORT_NAME,PORT_NAMES);
+            break;
         }
 }
 
@@ -171,9 +174,7 @@ int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
         ADC_resultat |= (0b11111100 <<8);
     }
 
-    int16_t vq = (Vref/pow(2,(bitsUsed_10_or_8-1))) * (ADC_resultat+1/2);
+    int16_t vq =  ((ADC_resultat + 0.5) * Vref) / (512);
     
     return vq;
 }
-
-
