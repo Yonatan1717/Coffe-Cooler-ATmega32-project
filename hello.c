@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRx, DDxn_liste)
+
 unsigned char ADMUX = 0;
 
 unsigned char TCCR0 = 0;
@@ -11,6 +13,7 @@ unsigned char TCCR1B = 0;
 unsigned char ADCH = 0;
 unsigned char ADCL = 0;
 unsigned char DDRB = 0;
+unsigned char PORTB = 0;
 
 unsigned char SFIOR = 7;
  
@@ -116,8 +119,33 @@ short int ADC_differencial(){
     return vADC;
 }
 
-void ACTIVATE_REGISTERS(unsigned char *DDRx_Register, unsigned char DDxn[]){ //E.g. DDRC, DDC0, DDC3, DDC5
 
+
+void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(short V_Difference, unsigned char *PORT_NAME,unsigned char PORT_NAMES[]){
+    //ADDS 2500 to V_difference since SWITCH statements can't be zero
+    unsigned char difference = round(((V_Difference+2500)/1000));
+    printf("%i\n",difference);
+
+        switch(difference){
+        case 0:
+            *PORT_NAME = (1<<PORT_NAMES[0]);
+            break;
+        case 1:
+            *PORT_NAME = (1<<PORT_NAMES[1]);
+            break;
+        case 2:
+            *PORT_NAME = (1<<PORT_NAMES[2]);
+            break;
+        case 3:
+            *PORT_NAME = (1<<PORT_NAMES[3]);
+            break;
+        case 4:
+            *PORT_NAME = (1<<PORT_NAMES[4]);
+            break;
+        }
+}
+
+void ACTIVATE_REGISTERS(unsigned char *DDRx_Register, unsigned char DDxn[]){ //E.g. DDRC, DDC0, DDC3, DDC5
 
     unsigned char size_DDxn = sizeof(DDxn); //DDR which you desire to set to
 
@@ -128,16 +156,19 @@ void ACTIVATE_REGISTERS(unsigned char *DDRx_Register, unsigned char DDxn[]){ //E
 }
 
 int main(){
+    unsigned char enable_output_port_C[] = {0,1,2,3,4};
     // unsigned char activate[] = {0,1,2};
     // ACTIVATE_REGISTERS(&DDRB, activate);
 
     // unsigned short hello = round((250000/1024));
     // unsigned short hello2 = round((250*1000)/1024);
-    printf("%i", SFIOR);
-    SFIOR &= ~((1<<2)|(1<<1)|(1<<0)); //Clears register
+    // printf("%i", SFIOR);
+    // SFIOR &= ~((1<<2)|(1<<1)|(1<<0)); //Clears register
     // SFIOR |= (1<<1)|(1<<0); //Enables T0 Compare match Trigger source
 
-    printf("%i", SFIOR);
+
+    ACTIVATE_REGISTERS_m(DDRB,enable_output_port_C);
+    printf("%i", DDRB);
 
     return 0;
 }

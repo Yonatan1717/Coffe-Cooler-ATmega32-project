@@ -4,26 +4,24 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define NoiseReduse MCUCR = (1<<SM0)
+#define NoiseReduse MCUCR = (1<<SM0) // side 32, tabell 13
 #define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRx, DDxn_liste)
 #define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs) LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
 // 1
 void ADC_Prescaler_Selections(uint8_t bit){
     // side 217, Table 85
-    ADCSRA &= ~((1<<0));
-    ADCSRA &= ~((1<<1));
-    ADCSRA &= ~((1<<2));
+    ADCSRA &= ~((1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2));
     
-    if(bit == 8) ADCSRA |= (1<<1) | (1<<0);
-    else if(bit == 16) ADCSRA |= (1<<2);
+    if(bit == 8) ADCSRA |= (1<<ADPS1) | (1<<ADPS0);
+    else if(bit == 16) ADCSRA |= (1<<ADPS2);
     else exit(3);
 }
 
 // 2
-void Input_Channel_and_Gain_Selection_E(uint8_t ADCn_porter_du_Onsker_Aktivert_i_Stignede_rekke_folge[]){
+void Input_Channel_and_Gain_Selection_E_ADCn_ports(uint8_t ADCn_ports[]){
     // side 214, tabell 84, kan også brukes til å aktivere alle andre bits i ADMUX
-
-    for(uint8_t i = 0; ADCn_porter_du_Onsker_Aktivert_i_Stignede_rekke_folge[i] != 0 || i == 0; i++) ADMUX |= (1<<ADCn_porter_du_Onsker_Aktivert_i_Stignede_rekke_folge[i]);
+    ADMUX &= 0xF0;
+    for(uint8_t i = 0; ADCn_ports[i] != 0 || i == 0; i++) ADMUX |= (1<<ADCn_ports[i]);
 }
 
 // 3
@@ -33,35 +31,29 @@ void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Deaktivert
 }
 
 // 4
-void ADC_Auto_Trigger_Enable_E_ADATE_E_SFIOR_T0_Compare_Match(uint16_t prescaler, uint16_t timeintervall_ms){
+void ADC_Auto_Trigger_Enables_A_Lot_Of_Things_uT0(uint16_t prescaler, uint16_t timeintervall_ms){
+    
     
     ///     Sets T0 CTC mode and calculates OCRn value for compare match      ///
 
     //side 80, Table 38.
-
+    TCCR0 = (1<<WGM01);
+    TIMSK = (1 << OCIE0);
+    
     //Regn ut n_OCRn for OCRn for å utføre compare match i Timer0
     uint16_t TOP = round((timeintervall_ms*1000)/prescaler);
-    OCR0 = TOP;
-
-    //OBS OBS!!! TCNT0 vil ikke bli høyere enn 255 ettersom 8 bit.
-     
-    //Enable CTC for T0
-    TCCR0 = (1<<WGM01);
+    if(TOP > 255) TOP = 255;
+    OCR0 = (uint8_t) TOP;
+    TCCR0 |= (1 << CS00) | (1 << CS02);
     
     ///     Enables Auto Trigger with T0 CTC as source    ///
     
     // side 216, Table 84
-
-    //Auto trigger for ADC enable
-    ADCSRA |= (1<<ADATE);
-
-    //legg til auto trigger source
-
-    //side 218, Table 86 ADC Auto Trigger Source
     SFIOR &= ~((1<<ADTS2)|(1<<ADTS1)|(1<<ADTS0)); //Clears register
     SFIOR |= (1<<ADTS1)|(1<<ADTS0); //Enables T0 Compare match Trigger source
-
-
+    
+    //Auto trigger for ADC enable
+    ADCSRA |= (1<<ADATE) | (1<<ADIE) | (1<< ADEN);
 
 }
 
@@ -73,7 +65,7 @@ int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16
 
     // exit status code 1: ugyldig timer/clock Number
     // exit status code 2: ugyldig bit description
-    if(timer_clock_num != 0 && timer_clock_num != 1 && timer_clock_num != 2){
+    if(timer_clock_num > 2){
         exit(1);
     }
 
@@ -132,20 +124,19 @@ int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16
 }
 
 // 8
-void ACTIVATE_REGISTERS(uint8_t *DDRx_Register, uint8_t DDxn[]){ //E.g. DDRC, DDC0, DDC3, DDC5
+void ACTIVATE_REGISTERS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. DDRC, DDC0, DDC3, DDC5
 
-    uint8_t size_DDxn = sizeof(DDxn); //DDR which you desire to set to
 
-    for(uint8_t i = 0; i<size_DDxn; i++){
+    for(uint8_t i = 0; DDxn[i] != 0 || i == 0; i++){
         *DDRx_Register |= (1<<DDxn[i]);
     }
 
 }
 
 // 9
-void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(uint8_t V_Difference, uint8_t *PORT_NAME,uint8_t PORT_NAMES[]){
+void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile uint8_t *PORT_NAME,uint8_t PORT_NAMES[]){
     //ADDS 2500 to V_difference since SWITCH statements can't be zero
-    uint8_t difference = ((V_Difference+2500)/1000);
+    uint8_t difference = round(((V_Difference+2500)/1000));
 
         switch(difference){
         case 0:
