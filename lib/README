@@ -3,7 +3,7 @@ Git Commands:
      hvilken branch du er i om du er oppdatert med forhold til "orgin" og om du har noe du må "commite".
 
   for å registrer egne endringer for commit:
-    command: git add < (.) for alle endreinger> eller <fil navn du ønsker registrer endringen til> 
+    command: git add < (.) for alle endreinger> eller <filnavn du ønsker registrer endringen til> 
 
   for å commite de registerte endringene (git add må skje før du commiter):
     command: git commit
@@ -13,6 +13,13 @@ Git Commands:
 
   for å pushe til hovedgre(orign):
     command: git push -u origin main
+  
+  Hvis du har gjort endringer som du angrer på:
+    command for individuelle filer: git restore <filnavn> 
+    command for å resete alle endringer du har gjort til en folder etter git pull (altså du ønsker å gå til bake til orignale pullen): 
+      git reset --hard 
+      (eller)
+      git restore .
 
   
 
