@@ -125,8 +125,6 @@ int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint
 
 // 8
 void ACTIVATE_REGISTERS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. DDRC, DDC0, DDC3, DDC5
-
-
     for(uint8_t i = 0; (DDxn[i] != 0 || i == 0) && i<8; i++){
         *DDRx_Register |= (1<<DDxn[i]);
     }
