@@ -17,9 +17,9 @@ Git Commands:
   Hvis du har gjort endringer som du angrer på:
     command for individuelle filer: git restore <filnavn> 
     command for å resete alle endringer du har gjort til en folder etter git pull (altså du ønsker å gå til bake til orignale pullen): 
-      git reset --hard 
+      git reset --hard (bruk kunn om du vil tilbake til forrige commit eller pull) 
       (eller)
-      git restore .
+      git restore . (anbefales å bruke denne)
 
   
 
