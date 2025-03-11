@@ -5,7 +5,7 @@
 #include <avrLib.h>
 
 uint8_t enable_output_port_C[] = {0,1,2,3,4}; // the output ports that are going to be used
-uint16_t Vref = 3000; // known refranse voltage 
+uint16_t Vref = 4000; // known refranse voltage 
 
 ISR(ADC_vect){
     int16_t diff_Result = ADC_differencial(Vref,10);
