@@ -18,16 +18,16 @@ void ADC_Prescaler_Selections(uint8_t bit){
 }
 
 // 2
-void Input_Channel_and_Gain_Selection_E_ADCn_ports(uint8_t ADCn_ports[]){
+void Input_Channel_and_Gain_Selection_Set_ADMUX_bits(uint8_t ADMUX_bits[]){
     // side 214, tabell 84, kan også brukes til å aktivere alle andre bits i ADMUX
     ADMUX &= 0xF0;
-    for(uint8_t i = 0; ADCn_ports[i] != 0 || i == 0; i++) ADMUX |= (1<<ADCn_ports[i]);
+    for(uint8_t i = 0; (ADMUX_bits[i] != 0 || i == 0) && i<8; i++) ADMUX |= (1<<ADMUX_bits[i]);
 }
 
 // 3
-void Input_Channel_and_Gain_Selection_D(uint8_t ADCn_porter_du_Onsker_Deaktivert_i_Stignede_rekke_folge[]){
+void Input_Channel_and_Gain_Selection_Clear_ADMUX_bits(uint8_t ADMUX_bits[]){
     // side 214, tabell 84, kan også brukes til å deaktivere alle andre bits i ADMUX
-    for(uint8_t i = 0; ADCn_porter_du_Onsker_Deaktivert_i_Stignede_rekke_folge[i] != 0 || i == 0; i++) ADMUX ^= (1<<ADCn_porter_du_Onsker_Deaktivert_i_Stignede_rekke_folge[i]);
+    for(uint8_t i = 0; (ADMUX_bits[i] != 0 || i == 0) && i<8; i++) ADMUX ^= (1<<ADMUX_bits[i]);
 }
 
 // 4
@@ -58,7 +58,7 @@ void ADC_Auto_Trigger_Enables_A_Lot_Of_Things_uT0(uint16_t prescaler, uint16_t t
 }
 
 // 5
-int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16_t bit_description){
+int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint16_t bit_description){
     // side 127 tabell 54 for clock 2
     // side 110 tabell 48 for clock 1
     // side 82 tabell 42 for clock 0
@@ -127,7 +127,7 @@ int Clock_Select_Description_for_a_Timer_Clock_n(uint8_t timer_clock_num, uint16
 void ACTIVATE_REGISTERS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. DDRC, DDC0, DDC3, DDC5
 
 
-    for(uint8_t i = 0; DDxn[i] != 0 || i == 0; i++){
+    for(uint8_t i = 0; (DDxn[i] != 0 || i == 0) && i<8; i++){
         *DDRx_Register |= (1<<DDxn[i]);
     }
 
@@ -169,12 +169,9 @@ int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
     //add høyre byte av resultat til ADC
     ADC_resultat |= (ADCH<<8);
 
-    if ((ADC_resultat & (1<<9)))
-    {
-        ADC_resultat |= (0b11111100 <<8);
-    }
-
-    int16_t vq =  ((ADC_resultat + 0.5) * Vref) / (512);
+    if ((ADC_resultat & (1<<9))) ADC_resultat |= (0b11111100 <<8);
     
-    return vq;
+    int16_t Vdiff =  ((ADC_resultat + 0.5) * Vref) / (512);
+    
+    return Vdiff;
 }
