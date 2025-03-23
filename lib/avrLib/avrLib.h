@@ -24,6 +24,8 @@
 
 #define SET_SLAVE_ADRESS_7BIT(value) TWAR |= (value << 1)
 
+#define SET_PULL_UP_RESISTOR_ON_SDA_SCL DDRC &= ~((1<<PC1)|(1<<PC0)); PORTC |= (1<<PC1) | (1<<PC0)
+
 // 1
 void ADC_Prescaler_Selections(uint8_t bit){
     // side 217, Table 85
