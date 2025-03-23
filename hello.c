@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define SET_SLAVE_ADRESS_7BIT(value) TWAR |= (value << 1)
+
 #define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRx, DDxn_liste)
 
 unsigned char ADMUX = 0;
@@ -16,7 +18,9 @@ unsigned char DDRB = 0;
 unsigned char PORTB = 0;
 
 unsigned char SFIOR = 7;
- 
+unsigned char TWAR = 0;
+
+
 
 
 void Input_Channel_and_Gain_Selection_E(unsigned char ADCn_porter_du_Onsker_Aktivert[8]){
@@ -166,9 +170,11 @@ int main(){
     // SFIOR &= ~((1<<2)|(1<<1)|(1<<0)); //Clears register
     // SFIOR |= (1<<1)|(1<<0); //Enables T0 Compare match Trigger source
 
+    unsigned char hello = 0b01101101;
 
-    ACTIVATE_REGISTERS_m(DDRB,enable_output_port_C);
-    printf("%i", DDRB);
+    SET_SLAVE_ADRESS_7BIT(hello);
+
+    printf("%i,,,,,%i", TWAR, hello);
 
     return 0;
 }

@@ -7,6 +7,23 @@
 #define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
 #define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRx, DDxn_liste)
 #define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs) LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
+
+
+#define TWI_ENABLE TWCR |= (1<<TWEN)
+#define TWI_ENABLE_ACK TWCR |= (1<<TWEA)
+#define TWI_START TWCR &= ~(1<<TWSTO); TWCR = (1<<TWSTA)
+#define TWI_STOP TWCR &= ~(1<<TWSTA); TWCR = (1<<TWSTO)
+#define TWI_ENABLE_INTERRUPT TWCR |= (1<<TWIE)
+
+#define STATUS_CODE (TWSR & 0xF8)
+
+#define TWI_BIT_RATE_PRESCALER_1 TWSR &= ~((1<<TWPS1)|(1<<TWPS0)) 
+#define TWI_BIT_RATE_PRESCALER_8 TWSR &= ~((1<<TWPS1)|(1<<TWPS0)); TWSR |= (1<<TWPS0)
+#define TWI_BIT_RATE_PRESCALER_16 TWSR &= ~((1<<TWPS1)|(1<<TWPS0)); TWSR |= (1<<TWPS1)
+#define TWI_BIT_RATE_PRESCALER_64 TWSR &= ~((1<<TWPS1)|(1<<TWPS0)); TWSR |= (1<<TWPS1) | (1<<TWPS0)
+
+#define SET_SLAVE_ADRESS_7BIT(value) TWAR |= (value << 1)
+
 // 1
 void ADC_Prescaler_Selections(uint8_t bit){
     // side 217, Table 85
@@ -128,7 +145,6 @@ void ACTIVATE_REGISTERS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. 
     for(uint8_t i = 0; (DDxn[i] != 0 || i == 0) && i<8; i++){
         *DDRx_Register |= (1<<DDxn[i]);
     }
-
 }
 
 // 9
@@ -173,3 +189,8 @@ int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
     
     return Vdiff;
 }
+
+
+
+//////////////////////////////////////// funksjoner for A5 //////////////////////////////////////////////////////
+
