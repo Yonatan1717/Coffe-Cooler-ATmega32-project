@@ -1,0 +1,79 @@
+Git Commands:
+  !! Alltid sjekk at du er i main før du begynner å kode bruk <command: git status> -> den vil fortelle deg 
+     hvilken branch du er i om du er oppdatert med forhold til "orgin" og om du har noe du må "commite".
+
+  for å registrer egne endringer for commit:
+    command: git add < (.) for alle endreinger> eller <filnavn du ønsker registrer endringen til> 
+
+  for å commite de registerte endringene (git add må skje før du commiter):
+    command: git commit
+
+  for å pull de ny commitsa til hovedgrenen(orgin):
+    command: git pull origin main
+
+  for å pushe til hovedgre(orign):
+    command: git push -u origin main
+  
+  Hvis du har gjort endringer som du angrer på:
+    command for individuelle filer: git restore <filnavn> 
+    command for å resete alle endringer du har gjort til en folder etter git pull (altså du ønsker å gå til bake til orignale pullen): 
+      git reset --hard (bruk kunn om du vil tilbake til forrige commit eller pull) 
+      (eller)
+      git restore . (anbefales å bruke denne)
+
+  
+
+
+
+
+exit status code:
+  1: ugyldig timer/clock Number -> 5
+  2: ugyldig bit description -> 5
+  3: ugyldig ADC prescaler selection bit -> 1
+
+
+
+
+
+
+
+
+This directory is intended for project specific (private) libraries.
+PlatformIO will compile them to static libraries and link into the executable file.
+
+The source code of each library should be placed in a separate directory
+("lib/your_library_name/[Code]").
+
+For example, see the structure of the following example libraries `Foo` and `Bar`:
+
+|--lib
+|  |
+|  |--Bar
+|  |  |--docs
+|  |  |--examples
+|  |  |--src
+|  |     |- Bar.c
+|  |     |- Bar.h
+|  |  |- library.json (optional. for custom build options, etc) https://docs.platformio.org/page/librarymanager/config.html
+|  |
+|  |--Foo
+|  |  |- Foo.c
+|  |  |- Foo.h
+|  |
+|  |- README --> THIS FILE
+|
+|- platformio.ini
+|--src
+   |- main.c
+
+Example contents of `src/main.c` using Foo and Bar:
+```
+#include <Foo.h>
+#include <Bar.h>
+
+int main (void)
+{
+  ...
+}
+
+```
