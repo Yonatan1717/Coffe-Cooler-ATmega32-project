@@ -8,21 +8,37 @@
 #define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRx, DDxn_liste)
 #define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs) LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
 
+// // Enable I2C
+// #define TWI_ENABLE TWCR = (1<<TWEN)
 
-#define TWI_ENABLE TWCR |= (1<<TWEN)
-#define TWI_ENABLE_ACK TWCR |= (1<<TWEA)
-#define TWI_START TWCR &= ~(1<<TWSTO); TWCR = (1<<TWSTA)
-#define TWI_STOP TWCR &= ~(1<<TWSTA); TWCR = (1<<TWSTO)
-#define TWI_ENABLE_INTERRUPT TWCR |= (1<<TWIE)
+// Set TWINT
+#define TWI_SET_TWINT TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE) | (1<<TWEA)
+
+// // Enable ACK
+// #define TWI_ENABLE_ACK TWCR = (1<<TWEA)
+
+// Send start condition
+#define TWI_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<< TWSTA)| (1<<TWIE)| (1<<TWEA)
+
+// Transmit stop condition
+#define TWI_STOP TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) | (1<<TWEA)
+
+// // I2C enable interrupt
+// #define TWI_ENABLE_INTERRUPT TWCR |= (1<<TWIE)
+
+
 
 #define STATUS_CODE (TWSR & 0xF8)
 
 #define TWI_BIT_RATE_PRESCALER_1 TWSR &= ~((1<<TWPS1)|(1<<TWPS0)) 
-#define TWI_BIT_RATE_PRESCALER_8 TWSR &= ~((1<<TWPS1)|(1<<TWPS0)); TWSR |= (1<<TWPS0)
-#define TWI_BIT_RATE_PRESCALER_16 TWSR &= ~((1<<TWPS1)|(1<<TWPS0)); TWSR |= (1<<TWPS1)
-#define TWI_BIT_RATE_PRESCALER_64 TWSR &= ~((1<<TWPS1)|(1<<TWPS0)); TWSR |= (1<<TWPS1) | (1<<TWPS0)
+#define TWI_BIT_RATE_PRESCALER_8 TWSR = (1<<TWPS0)
+#define TWI_BIT_RATE_PRESCALER_16 TWSR = (1<<TWPS1)
+#define TWI_BIT_RATE_PRESCALER_64 TWSR = (1<<TWPS1) | (1<<TWPS0)
 
-#define SET_SLAVE_ADRESS_7BIT(value) TWAR |= (value << 1)
+#define SET_SLAVE_ADRESS_7BIT(this_slave_addr_7bit) TWAR |= (this_slave_addr_7bit << 1)
+#define TWI_SLA_W(slave_addr_7bit) TWDR = (slave_addr_7bit << 1)  
+#define TWI_SLA_R(slave_addr_7bit) TWDR = (slave_addr_7bit << 1) | 1
+
 
 #define SET_PULL_UP_RESISTOR_ON_SDA_SCL DDRC &= ~((1<<PC1)|(1<<PC0)); PORTC |= (1<<PC1) | (1<<PC0)
 
@@ -196,3 +212,22 @@ int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
 
 //////////////////////////////////////// funksjoner for A5 //////////////////////////////////////////////////////
 
+uint8_t resiveData(uint8_t dest_slave_addr_7bit){
+    uint8_t recivedData = 0;
+ 
+
+    return recivedData;
+}
+
+
+
+
+void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {  
+  // configuration for the interrupt  
+  GICR |= (1 << INT0); // external interrupt request 0 enabled (INT0, not INT1)  
+  MCUCR |= (1 << ISC00); // set ISC00 as one so that any logical change on INT0 generates an interrupt request  
+  MCUCR &= ~(1 << ISC01); //clear ISC01 to make it a low level interrupt  
+
+  DDRD &= ~(1 << PD2); // Set PD2 as input  
+  PORTD |= (1 << PD2);  // Enable pull-up resistor on PD2  
+} 
