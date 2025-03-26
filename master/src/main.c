@@ -64,7 +64,7 @@ int main(){
     DDRB = 255;
     sei();
     SET_PULL_UP_RESISTOR_ON_SDA_SCL;
-    DDRA = 0b11111111;
+    DDRA = 0b11111111; // kunn for debuging ikke nødvendign
     SET_SLAVE_ADRESS_7BIT(50);
     interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
     interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE();

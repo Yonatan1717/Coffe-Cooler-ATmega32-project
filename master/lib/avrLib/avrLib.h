@@ -217,24 +217,24 @@ uint8_t reciveData_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7bit){
     switch (STATUS_CODE)
     {
         case 0x08:
-            PORTA ^= (1<<PB0);
+            PORTA ^= (1<<PB0); // kunn for debuging ikke nødvendign
             TWI_SLA_R(dest_slave_addr_7bit);
             TWI_SET_TWINT_ACK;
             break;
         case 0x10:
-            PORTA ^= (1<<PB1);
+            PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
             TWI_SET_TWINT_ACK;
             break;
         case 0x38:
-            PORTA ^= (1<<PB2);
+            PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
             TWI_SET_TWINT_ACK;
             break;
         case 0x40:
-            PORTA ^= (1<<PB3);
+            PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
             TWI_SET_TWINT_NOT_ACK;
             break;
         case 0x48:
-            PORTA ^= (1<<PB4);
+            PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
             TWI_START;
             break;
         case 0x50: 
@@ -243,7 +243,7 @@ uint8_t reciveData_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7bit){
             break;
         case 0x58:
             recivedData = TWDR;
-            PORTA ^= (1<<PB6);
+            PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
             TWI_STOP;
             break;
         default:
@@ -286,35 +286,35 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7
         switch (STATUS_CODE)
         {
             case 0x08:
-                PORTA ^= (1<<PB0);
+                PORTA ^= (1<<PB0); // kunn for debuging ikke nødvendign 
                 TWI_SLA_W(dest_slave_addr_7bit);
                 TWI_SET_TWINT_ACK;
                 break;
             case 0x10:
-                PORTA ^= (1<<PB1);
+                PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
             case 0x18:
                 TWDR = requested_value;
-                PORTA ^= (1<<PB2);
+                PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
             case 0x20:
-                PORTA ^= (1<<PB3);
+                PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
                 TWI_START;
                 break;
             case 0x28:
-                PORTA ^= (1<<PB4);
+                PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
                 startingMode = 'r';
                 TWI_START;
                 return 0;
             case 0x30: 
-                PORTA ^= (1<<PB5);
+                PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
                 recivedData = TWDR; 
                 TWI_STOP;
                 break;
             case 0x38:
-                PORTA ^= (1<<PB6);
+                PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
                 TWI_START;
                 break;
             default:
@@ -327,41 +327,41 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7
         {
 
             case 0x08:
-                PORTB ^= (1<<PB0);
+                PORTB ^= (1<<PB0); // kunn for debuging ikke nødvendign
                 TWI_SLA_R(dest_slave_addr_7bit);
                 TWI_SET_TWINT_ACK;
                 break;
 
             case 0x10:
-                PORTB ^= (1<<PB1);
+                PORTB ^= (1<<PB1); // kunn for debuging ikke nødvendign
                 TWI_SLA_R(dest_slave_addr_7bit);
                 TWI_SET_TWINT_ACK;
                 break;
 
             case 0x38:
-                PORTB ^= (1<<PB2);
+                PORTB ^= (1<<PB2); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
 
             case 0x40:
-                PORTB ^= (1<<PB3);
+                PORTB ^= (1<<PB3); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_NOT_ACK;
                 break;
 
             case 0x48:
-                PORTB ^= (1<<PB4);
+                PORTB ^= (1<<PB4); // kunn for debuging ikke nødvendign
                 TWI_START;
                 break;
 
             case 0x50: 
-                PORTB ^= (1<<PB5);
+                PORTB ^= (1<<PB5); // kunn for debuging ikke nødvendign
                 recivedData = TWDR; 
                 TWI_SET_TWINT_NOT_ACK;
                 break;
 
             case 0x58:
                 recivedData = TWDR;
-                PORTB ^= (1<<PB6);
+                PORTB ^= (1<<PB6); // kunn for debuging ikke nødvendign
                 startingMode = 'w';
                 TWI_STOP;
                 break;
