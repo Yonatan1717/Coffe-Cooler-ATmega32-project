@@ -278,11 +278,17 @@ void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() {
 
 
 uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
+    /*
+    !!!!!!!!!!!!!!!!!! 
+    MÅ LESE dette er ikke ferdig produkt denne er mest brukt for testeing mye av koden under
+    kan kuttes ned
+    !!!!!!!!!!!!!!!!!!!!
+    */
     uint8_t recivedData = 0;
-    static char startingMode = 'w';
+    static char mode = 'w';
 
 
-    if (startingMode == 'w'){
+    if (mode == 'w'){
         switch (STATUS_CODE)
         {
             case 0x08:
@@ -290,29 +296,35 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7
                 TWI_SLA_W(dest_slave_addr_7bit);
                 TWI_SET_TWINT_ACK;
                 break;
+                
             case 0x10:
                 PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
+
             case 0x18:
                 TWDR = requested_value;
                 PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
+
             case 0x20:
                 PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
                 TWI_START;
                 break;
+
             case 0x28:
                 PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
-                startingMode = 'r';
+                mode = 'r';
                 TWI_START;
                 return 0;
+
             case 0x30: 
                 PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
                 recivedData = TWDR; 
                 TWI_STOP;
                 break;
+
             case 0x38:
                 PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
                 TWI_START;
@@ -322,10 +334,9 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7
         }
     }
 
-    if (startingMode == 'r'){
+    if (mode == 'r'){
         switch (STATUS_CODE)
         {
-
             case 0x08:
                 PORTB ^= (1<<PB0); // kunn for debuging ikke nødvendign
                 TWI_SLA_R(dest_slave_addr_7bit);
@@ -362,7 +373,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7
             case 0x58:
                 recivedData = TWDR;
                 PORTB ^= (1<<PB6); // kunn for debuging ikke nødvendign
-                startingMode = 'w';
+                mode = 'w';
                 TWI_STOP;
                 break;
             default:
