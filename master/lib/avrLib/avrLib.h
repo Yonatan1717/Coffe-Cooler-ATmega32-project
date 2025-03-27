@@ -386,7 +386,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t
                 break;
 
             case 0x18:
-                sendData(requested_data);
+                sendData(requested_value);
                 // PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
