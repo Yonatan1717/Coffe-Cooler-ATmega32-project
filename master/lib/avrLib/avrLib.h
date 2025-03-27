@@ -5,18 +5,18 @@
 #include <stdlib.h>
 #include <util/delay.h>
 
-
+// nyttige macros //
 #define ACTIVATE_OUTPUT_PORTS_m(DDRx, DDxn_liste) ACTIVATE_OUTPUT_PORTS(&DDRx, DDxn_liste)
 #define SET_PORTS_m(PORTx, Pxn_list) ACTIVATE_OUTPUT_PORTS(&PORTx, Pxn_list)
 #define SET_PORT(PORTx, Pxn) PORTx |= (1<<Pxn)
 #define CLEAR_PORT(PORTx, Pxn) PORTx &= ~(1<<Pxn)
 #define TOGGLE_PORT(PORTx, Pxn) PORTx ^= (1<<Pxn)
 
+// A4 //
 #define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
-
 #define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs)LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
 
-
+// A5 //
 #define TWI_SET_TWINT_ACK TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE) | (1<<TWEA)
 #define TWI_SET_TWINT TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE) 
 
@@ -38,7 +38,6 @@
 #define SET_SLAVE_ADRESS_7BIT(this_slave_addr_7bit) TWAR |= (this_slave_addr_7bit << 1)
 #define TWI_SLA_W(slave_addr_7bit) TWDR = (slave_addr_7bit << 1)  
 #define TWI_SLA_R(slave_addr_7bit) TWDR = (slave_addr_7bit << 1) | 1
-
 
 #define SET_PULL_UP_RESISTOR_ON_SDA_SCL DDRC &= ~((1<<PC1)|(1<<PC0)); PORTC |= (1<<PC1) | (1<<PC0)
 

@@ -28,6 +28,8 @@
    unsigned char receiveData;		//Initializing storage of received data
    unsigned char sendData = 0xFF;	//Initializing storage of data to be sent 
    
+   // hello
+   
    while (1)
    {
      if (pressed(&PIND, 2, &pressedCounterA))		//If the button is being pressed
