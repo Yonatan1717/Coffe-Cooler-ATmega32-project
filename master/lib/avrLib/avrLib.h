@@ -3,7 +3,7 @@
 #include <avr/interrupt.h>
 #include <math.h>
 #include <stdlib.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 
 // PR - Production Ready
 
@@ -20,7 +20,7 @@
 
 // Set TWINT
 #define TWI_SET_TWINT_ACK TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE) | (1<<TWEA)
-#define TWI_SET_TWINT_NOT_ACK TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE) 
+#define TWI_SET_TWINT TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE) 
 // // Enable ACK
 // #define TWI_ENABLE_ACK TWCR = (1<<TWEA)
 
@@ -246,7 +246,7 @@ uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
             break;
         case 0x40:
             // PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
-            TWI_SET_TWINT_NOT_ACK;
+            TWI_SET_TWINT;
             break;
         case 0x48:
             // PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
@@ -254,7 +254,7 @@ uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
             break;
         case 0x50: 
             recivedData = TWDR; 
-            TWI_SET_TWINT_NOT_ACK;
+            TWI_SET_TWINT;
             break;
         case 0x58:
             recivedData = TWDR;
@@ -299,21 +299,20 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
     {
         case 0x08:
             TWI_SLA_W(dest_slave_addr_7bit);
-            TWI_SET_TWINT_ACK;
+            TWI_SET_TWINT;
             break;
             
         case 0x10:
             TWI_SLA_R(dest_slave_addr_7bit);
-            TWI_SET_TWINT_ACK;
+            TWI_SET_TWINT;
             break;
 
         case 0x18:
             sendData(requested_value);
-            TWI_SET_TWINT_ACK;
+            TWI_SET_TWINT;
             break;
         
         case 0x20:
-            // PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
             TWI_START;
             break;
 
@@ -322,30 +321,24 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
             break;
         
         case 0x30: 
-            // PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
-            readData(recived_data);
             TWI_STOP;
             break;
         
         case 0x38:
-            // PORTB ^= (1<<PB2); // kunn for debuging ikke nødvendign
-            TWI_SET_TWINT_ACK;
+            TWI_SET_TWINT;
             break;
 
         case 0x40:
-            // PORTB ^= (1<<PB3); // kunn for debuging ikke nødvendign
-            TWI_SET_TWINT_NOT_ACK;
+            TWI_SET_TWINT;
             break;
 
         case 0x48:
-            // PORTB ^= (1<<PB4); // kunn for debuging ikke nødvendign
             TWI_START;
             break;
 
         case 0x50: 
-            // PORTB ^= (1<<PB5); // kunn for debuging ikke nødvendign
             readData(recived_data); 
-            TWI_SET_TWINT_NOT_ACK;
+            TWI_SET_TWINT;
             break;
 
         case 0x58:
@@ -439,7 +432,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t
 
             case 0x40:
                 // PORTB ^= (1<<PB3); // kunn for debuging ikke nødvendign
-                TWI_SET_TWINT_NOT_ACK;
+                TWI_SET_TWINT;
                 break;
 
             case 0x48:
@@ -450,7 +443,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t
             case 0x50: 
                 // PORTB ^= (1<<PB5); // kunn for debuging ikke nødvendign
                 readData(recived_data); 
-                TWI_SET_TWINT_NOT_ACK;
+                TWI_SET_TWINT;
                 break;
 
             case 0x58:

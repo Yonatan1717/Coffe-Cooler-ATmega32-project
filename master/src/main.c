@@ -9,7 +9,6 @@ uint8_t recived_data = 0;
 
   
 ISR(INT0_vect) {  
-  // interrupt service routine using INT0 via port D2  
   if (debounce(&PIND, PD2)) { 
     requested_data = 0xAA;
     TWI_START; 
@@ -18,7 +17,6 @@ ISR(INT0_vect) {
 } 
 
 ISR(INT1_vect) {  
-  // interrupt service routine using INT1 via port D3
   if (debounce(&PIND, PD3)) {  
     requested_data = 0xBB;
     TWI_START; 
@@ -26,7 +24,6 @@ ISR(INT1_vect) {
 } 
 
 ISR(TWI_vect){
-    // uint8_t slave_addr = 50;
     uint8_t recivedData = reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(18,requested_data);
     
     if(requested_data == 0xAA){
@@ -38,9 +35,6 @@ ISR(TWI_vect){
       if(recivedData == 0xB0) CLEAR_PORT(PORTB, PB1);
       else if(recivedData == 0xB1) SET_PORT(PORTB, PB1);
     }
-
-    if (recivedData == 0xFF) PORTA ^= 2;
-
 }
 
 void config(){
@@ -51,14 +45,12 @@ void config(){
 }
 
 int main(){
-    DDRA = 2;
     config();
     interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
     interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE();
 
     uint8_t activate_B_ports[] = {0,1};
     ACTIVATE_OUTPUT_PORTS_m(DDRB, activate_B_ports);
-
 
     while(1);
     return 0;
