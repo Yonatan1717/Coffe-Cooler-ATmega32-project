@@ -5,37 +5,28 @@
 #include <stdlib.h>
 #include <util/delay.h>
 
-// PR - Production Ready
 
-#define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
 #define ACTIVATE_OUTPUT_PORTS_m(DDRx, DDxn_liste) ACTIVATE_OUTPUT_PORTS(&DDRx, DDxn_liste)
 #define SET_PORTS_m(PORTx, Pxn_list) ACTIVATE_OUTPUT_PORTS(&PORTx, Pxn_list)
 #define SET_PORT(PORTx, Pxn) PORTx |= (1<<Pxn)
 #define CLEAR_PORT(PORTx, Pxn) PORTx &= ~(1<<Pxn)
 #define TOGGLE_PORT(PORTx, Pxn) PORTx ^= (1<<Pxn)
-#define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs) LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
 
-// // Enable I2C
-// #define TWI_ENABLE TWCR = (1<<TWEN)
+#define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
 
-// Set TWINT
+#define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs)LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
+
+
 #define TWI_SET_TWINT_ACK TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE) | (1<<TWEA)
 #define TWI_SET_TWINT TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE) 
-// // Enable ACK
-// #define TWI_ENABLE_ACK TWCR = (1<<TWEA)
 
-// Send start condition
-#define TWI_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<< TWSTA)| (1<<TWIE)| (1<<TWEA)
-#define readData(buffer) buffer = TWDR
-#define sendData(data) TWDR = data
 
-// Transmit stop condition
-#define TWI_STOP TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO)
+#define TWI_readData(buffer) buffer = TWDR // read data
+#define TWI_sendData(data) TWDR = data // send data
+
+#define TWI_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<< TWSTA)| (1<<TWIE)| (1<<TWEA) // Send start condition
+#define TWI_STOP TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) // Transmit stop condition
 #define TWI_STOP_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) |(1<<TWSTA)
-// // I2C enable interrupt
-// #define TWI_ENABLE_INTERRUPT TWCR |= (1<<TWIE)
-
-
 
 #define STATUS_CODE (TWSR & 0xF8)
 
@@ -50,6 +41,8 @@
 
 
 #define SET_PULL_UP_RESISTOR_ON_SDA_SCL DDRC &= ~((1<<PC1)|(1<<PC0)); PORTC |= (1<<PC1) | (1<<PC0)
+
+////////////////////////////////////// funksjoner for A4 /////////////////////////////////////////
 
 // 1
 void ADC_Prescaler_Selections(uint8_t bit){
@@ -227,50 +220,6 @@ int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
 
 //////////////////////////////////////// funksjoner for A5 //////////////////////////////////////////////////////
 
-uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
-    uint8_t recivedData = 0;
-    switch (STATUS_CODE)
-    {
-        case 0x08:
-            // PORTA ^= (1<<PB0); // kunn for debuging ikke nødvendign
-            TWI_SLA_R(dest_slave_addr_7bit);
-            TWI_SET_TWINT_ACK;
-            break;
-        case 0x10:
-            // PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
-            TWI_SET_TWINT_ACK;
-            break;
-        case 0x38:
-            // PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
-            TWI_SET_TWINT_ACK;
-            break;
-        case 0x40:
-            // PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
-            TWI_SET_TWINT;
-            break;
-        case 0x48:
-            // PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
-            TWI_START;
-            break;
-        case 0x50: 
-            recivedData = TWDR; 
-            TWI_SET_TWINT;
-            break;
-        case 0x58:
-            recivedData = TWDR;
-            // PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
-            TWI_STOP;
-            break;
-        default:
-            break;
-    }
-
-    return recivedData;
-}
-
-
-
-
 void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {  
   // configuration for the interrupt  
   GICR |= (1 << INT0); // external interrupt request 0 enabled (INT0, not INT1)  
@@ -308,7 +257,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
             break;
 
         case 0x18:
-            sendData(requested_value);
+            TWI_sendData(requested_value);
             TWI_SET_TWINT;
             break;
         
@@ -337,12 +286,12 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
             break;
 
         case 0x50: 
-            readData(recived_data); 
+            TWI_readData(recived_data); 
             TWI_SET_TWINT;
             break;
 
         case 0x58:
-            readData(recived_data);
+            TWI_readData(recived_data);
             TWI_STOP;
             break;
         default:
@@ -351,7 +300,6 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
 
     return recived_data;
 }
-
 
 uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
     /*
@@ -379,7 +327,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t
                 break;
 
             case 0x18:
-                sendData(requested_value);
+                TWI_sendData(requested_value);
                 // PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
@@ -397,7 +345,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t
 
             case 0x30: 
                 // PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
-                readData(recived_data); // mest sannsynelig ikke nødvending 
+                TWI_readData(recived_data); // mest sannsynelig ikke nødvending 
                 TWI_STOP;
                 break;
 
@@ -442,7 +390,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t
 
             case 0x50: 
                 // PORTB ^= (1<<PB5); // kunn for debuging ikke nødvendign
-                readData(recived_data); 
+                TWI_readData(recived_data); 
                 TWI_SET_TWINT;
                 break;
 
@@ -460,6 +408,48 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t
     return recived_data;
 }
 
+uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
+    uint8_t recivedData = 0;
+    switch (STATUS_CODE)
+    {
+        case 0x08:
+            // PORTA ^= (1<<PB0); // kunn for debuging ikke nødvendign
+            TWI_SLA_R(dest_slave_addr_7bit);
+            TWI_SET_TWINT_ACK;
+            break;
+        case 0x10:
+            // PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
+            TWI_SET_TWINT_ACK;
+            break;
+        case 0x38:
+            // PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
+            TWI_SET_TWINT_ACK;
+            break;
+        case 0x40:
+            // PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
+            TWI_SET_TWINT;
+            break;
+        case 0x48:
+            // PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
+            TWI_START;
+            break;
+        case 0x50: 
+            recivedData = TWDR; 
+            TWI_SET_TWINT;
+            break;
+        case 0x58:
+            recivedData = TWDR;
+            // PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
+            TWI_STOP;
+            break;
+        default:
+            break;
+    }
+
+    return recivedData;
+}
+
+
 
 ////////////////////// debounce /////////////////////////////
 
@@ -476,13 +466,13 @@ uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {
     return 0;  
   }  
   
-  uint8_t debounce(volatile uint8_t *pin_port, uint8_t bitPosition) {  
-    // debounce function that takes in volatile variable uint8 pointer pin_port and integer bitPosition  
-    if (pressed(*pin_port, bitPosition)) {  
-      _delay_ms(5);
-      if ((*pin_port & (1 << bitPosition)) == 0) {  
-        return 1;  
-      }  
+uint8_t debounce(volatile uint8_t *pin_port, uint8_t bitPosition) {  
+// debounce function that takes in volatile variable uint8 pointer pin_port and integer bitPosition  
+if (pressed(*pin_port, bitPosition)) {  
+    _delay_ms(5);
+    if ((*pin_port & (1 << bitPosition)) == 0) {  
+    return 1;  
     }  
-    return 0;  
-  }  
+}  
+return 0;  
+}  
