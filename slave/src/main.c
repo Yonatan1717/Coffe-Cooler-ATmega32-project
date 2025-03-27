@@ -26,7 +26,7 @@
    uint8_t pressedCounterA = 0;	//Initializing pressedCounter for button_A
    uint8_t pressedCounterB = 0;	//Initializing pressedCounter for button_B
    unsigned char receiveData;		//Initializing storage of received data
-   unsigned char sendData = 0x00;	//Initializing storage of data to be sent 
+   unsigned char sendData = 0xFF;	//Initializing storage of data to be sent 
    
    while (1)
    {

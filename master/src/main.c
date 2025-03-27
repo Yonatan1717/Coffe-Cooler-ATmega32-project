@@ -5,6 +5,7 @@
 #include <avrLib.h>
 
 uint8_t requested_data = 0;
+uint8_t recived_data = 0;
 
   
 ISR(INT0_vect) {  
@@ -17,7 +18,7 @@ ISR(INT0_vect) {
 } 
 
 ISR(INT1_vect) {  
-  // interrupt service routine using INT0 via port D2  
+  // interrupt service routine using INT1 via port D3
   if (debounce(&PIND, PD3)) {  
     requested_data = 0xBB;
     TWI_START; 
@@ -26,7 +27,7 @@ ISR(INT1_vect) {
 
 ISR(TWI_vect){
     // uint8_t slave_addr = 50;
-    uint8_t recivedData = reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_TESTER(18,requested_data);
+    uint8_t recivedData = reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(18,requested_data);
     
     if(requested_data == 0xAA){
       if(recivedData == 0xA0) CLEAR_PORT(PORTB, PB0);
@@ -38,15 +39,19 @@ ISR(TWI_vect){
       else if(recivedData == 0xB1) SET_PORT(PORTB, PB1);
     }
 
+    if (recivedData == 0xFF) PORTA ^= 2;
+
 }
 
 void config(){
   sei();
   SET_PULL_UP_RESISTOR_ON_SDA_SCL;
   SET_SLAVE_ADRESS_7BIT(50);
+  TWI_BIT_RATE_PRESCALER_1;
 }
 
 int main(){
+    DDRA = 2;
     config();
     interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
     interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE();

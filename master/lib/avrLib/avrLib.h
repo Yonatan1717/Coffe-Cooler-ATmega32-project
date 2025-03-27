@@ -3,6 +3,7 @@
 #include <avr/interrupt.h>
 #include <math.h>
 #include <stdlib.h>
+#include <avr/delay.h>
 
 // PR - Production Ready
 
@@ -291,7 +292,7 @@ void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() {
   }
 
 
-uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_TESTER(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
+uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
     /*
     !!!!!!!!!!!!!!!!!! 
     MÅ LESE dette er ikke ferdig produkt denne er mest brukt for testeing mye av koden under
@@ -331,7 +332,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_TESTER(uint8_t dest_slave
                 // PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
                 mode = 'r';
                 TWI_START;
-                return 0;
+                break;
 
             case 0x30: 
                 // PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
@@ -398,44 +399,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_TESTER(uint8_t dest_slave
     return recivedData;
 }
 
-uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
-    uint8_t recived_data = 0;
 
-    switch (STATUS_CODE)
-    {
-        case 0x08:
-            TWI_SLA_W(dest_slave_addr_7bit);
-            TWI_SET_TWINT_ACK;
-            break;
-            
-        case 0x10:
-            TWI_SLA_R(dest_slave_addr_7bit);
-            TWI_SET_TWINT_ACK;
-            break;
-
-        case 0x18:
-            sendData(requested_value);
-            TWI_SET_TWINT_ACK;
-            break;
-
-        case 0x28:
-            TWI_START;
-            return 0;
-
-        case 0x40:
-            TWI_SET_TWINT_NOT_ACK;
-            break;
-
-        case 0x58:
-            recivedData(recived_data);
-            TWI_STOP;
-            break;
-        default:
-            break;
-    }
-
-    return recived_data;
-}
 
 
 
@@ -456,13 +420,8 @@ uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {
   
   uint8_t debounce(volatile uint8_t *pin_port, uint8_t bitPosition) {  
     // debounce function that takes in volatile variable uint8 pointer pin_port and integer bitPosition  
-    uint32_t ms = 5;  
     if (pressed(*pin_port, bitPosition)) {  
-      uint32_t counter = 0;  
-      while (counter < ms * 1000 && (*pin_port & (1 << bitPosition)) == 0) {  
-        // delay stops counting if the button is let go within 5ms  
-        ++counter;  
-      }  
+      _delay_ms(5);
       if ((*pin_port & (1 << bitPosition)) == 0) {  
         return 1;  
       }  
