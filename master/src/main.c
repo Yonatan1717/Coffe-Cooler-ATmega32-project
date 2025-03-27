@@ -9,10 +9,11 @@ uint8_t requested_data = 0;
   
 ISR(INT0_vect) {  
   // interrupt service routine using INT0 via port D2  
-  if (debounce(&PIND, PD2)) {  
+  if (debounce(&PIND, PD2)) { 
     requested_data = 0xAA;
     TWI_START; 
   }  
+  
 } 
 
 ISR(INT1_vect) {  
@@ -25,7 +26,7 @@ ISR(INT1_vect) {
 
 ISR(TWI_vect){
     // uint8_t slave_addr = 50;
-    uint8_t recivedData = reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(18,requested_data);
+    uint8_t recivedData = reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_TESTER(18,requested_data);
     
     if(requested_data == 0xAA){
       if(recivedData == 0xA0) CLEAR_PORT(PORTB, PB0);

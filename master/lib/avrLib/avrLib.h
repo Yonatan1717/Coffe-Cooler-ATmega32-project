@@ -11,6 +11,7 @@
 #define SET_PORTS_m(PORTx, Pxn_list) ACTIVATE_OUTPUT_PORTS(&PORTx, Pxn_list)
 #define SET_PORT(PORTx, Pxn) PORTx |= (1<<Pxn)
 #define CLEAR_PORT(PORTx, Pxn) PORTx &= ~(1<<Pxn)
+#define TOGGLE_PORT(PORTx, Pxn) PORTx ^= (1<<Pxn)
 #define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs) LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
 
 // // Enable I2C
@@ -230,24 +231,24 @@ uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
     switch (STATUS_CODE)
     {
         case 0x08:
-            PORTA ^= (1<<PB0); // kunn for debuging ikke nødvendign
+            // PORTA ^= (1<<PB0); // kunn for debuging ikke nødvendign
             TWI_SLA_R(dest_slave_addr_7bit);
             TWI_SET_TWINT_ACK;
             break;
         case 0x10:
-            PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
+            // PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
             TWI_SET_TWINT_ACK;
             break;
         case 0x38:
-            PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
+            // PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
             TWI_SET_TWINT_ACK;
             break;
         case 0x40:
-            PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
+            // PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
             TWI_SET_TWINT_NOT_ACK;
             break;
         case 0x48:
-            PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
+            // PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
             TWI_START;
             break;
         case 0x50: 
@@ -256,7 +257,7 @@ uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
             break;
         case 0x58:
             recivedData = TWDR;
-            PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
+            // PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
             TWI_STOP;
             break;
         default:
@@ -305,41 +306,41 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_TESTER(uint8_t dest_slave
         switch (STATUS_CODE)
         {
             case 0x08:
-                PORTA ^= (1<<PB0); // kunn for debuging ikke nødvendign 
+                // PORTA ^= (1<<PB0); // kunn for debuging ikke nødvendign 
                 TWI_SLA_W(dest_slave_addr_7bit);
                 TWI_SET_TWINT_ACK;
                 break;
                 
             case 0x10:
-                PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
+                // PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
 
             case 0x18:
                 TWDR = requested_value;
-                PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
+                // PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
 
             case 0x20:
-                PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
+                // PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
                 TWI_START;
                 break;
 
             case 0x28:
-                PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
+                // PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
                 mode = 'r';
                 TWI_START;
                 return 0;
 
             case 0x30: 
-                PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
+                // PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
                 recivedData = TWDR; 
                 TWI_STOP;
                 break;
 
             case 0x38:
-                PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
+                // PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
                 TWI_START;
                 break;
             default:
@@ -351,41 +352,41 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_TESTER(uint8_t dest_slave
         switch (STATUS_CODE)
         {
             case 0x08:
-                PORTB ^= (1<<PB0); // kunn for debuging ikke nødvendign
+                // PORTB ^= (1<<PB0); // kunn for debuging ikke nødvendign
                 TWI_SLA_R(dest_slave_addr_7bit);
                 TWI_SET_TWINT_ACK;
                 break;
 
             case 0x10:
-                PORTB ^= (1<<PB1); // kunn for debuging ikke nødvendign
+                // PORTB ^= (1<<PB1); // kunn for debuging ikke nødvendign
                 TWI_SLA_R(dest_slave_addr_7bit);
                 TWI_SET_TWINT_ACK;
                 break;
 
             case 0x38:
-                PORTB ^= (1<<PB2); // kunn for debuging ikke nødvendign
+                // PORTB ^= (1<<PB2); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
 
             case 0x40:
-                PORTB ^= (1<<PB3); // kunn for debuging ikke nødvendign
+                // PORTB ^= (1<<PB3); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_NOT_ACK;
                 break;
 
             case 0x48:
-                PORTB ^= (1<<PB4); // kunn for debuging ikke nødvendign
+                // PORTB ^= (1<<PB4); // kunn for debuging ikke nødvendign
                 TWI_START;
                 break;
 
             case 0x50: 
-                PORTB ^= (1<<PB5); // kunn for debuging ikke nødvendign
+                // PORTB ^= (1<<PB5); // kunn for debuging ikke nødvendign
                 recivedData = TWDR; 
                 TWI_SET_TWINT_NOT_ACK;
                 break;
 
             case 0x58:
                 recivedData = TWDR;
-                PORTB ^= (1<<PB6); // kunn for debuging ikke nødvendign
+                // PORTB ^= (1<<PB6); // kunn for debuging ikke nødvendign
                 mode = 'w';
                 TWI_STOP;
                 break;
