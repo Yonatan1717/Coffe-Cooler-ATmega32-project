@@ -4,6 +4,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+// PR - Production Ready
+
 #define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
 #define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRx, DDxn_liste)
 #define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs) LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
@@ -19,6 +21,8 @@
 
 // Send start condition
 #define TWI_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<< TWSTA)| (1<<TWIE)| (1<<TWEA)
+#define recivedData(buffer) buffer = TWDR
+#define sendData(data) TWDR = data
 
 // Transmit stop condition
 #define TWI_STOP TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO)
@@ -212,7 +216,7 @@ int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
 
 //////////////////////////////////////// funksjoner for A5 //////////////////////////////////////////////////////
 
-uint8_t reciveData_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7bit){
+uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
     uint8_t recivedData = 0;
     switch (STATUS_CODE)
     {
@@ -277,7 +281,7 @@ void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() {
   }
 
 
-uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
+uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_TESTER(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
     /*
     !!!!!!!!!!!!!!!!!! 
     MÅ LESE dette er ikke ferdig produkt denne er mest brukt for testeing mye av koden under
@@ -382,6 +386,45 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECRION(uint8_t dest_slave_addr_7
     }
 
     return recivedData;
+}
+
+uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
+    uint8_t recived_data = 0;
+
+    switch (STATUS_CODE)
+    {
+        case 0x08:
+            TWI_SLA_W(dest_slave_addr_7bit);
+            TWI_SET_TWINT_ACK;
+            break;
+            
+        case 0x10:
+            TWI_SLA_R(dest_slave_addr_7bit);
+            TWI_SET_TWINT_ACK;
+            break;
+
+        case 0x18:
+            sendData(requested_value);
+            TWI_SET_TWINT_ACK;
+            break;
+
+        case 0x28:
+            TWI_START;
+            return 0;
+
+        case 0x40:
+            TWI_SET_TWINT_NOT_ACK;
+            break;
+
+        case 0x58:
+            recivedData(recived_data);
+            TWI_STOP;
+            break;
+        default:
+            break;
+    }
+
+    return recived_data;
 }
 
 
