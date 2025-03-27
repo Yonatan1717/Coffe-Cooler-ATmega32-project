@@ -23,51 +23,36 @@ ISR(INT1_vect) {
   }  
 } 
 
-
-
 ISR(TWI_vect){
     // uint8_t slave_addr = 50;
     uint8_t recivedData = reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(18,requested_data);
     
     if(requested_data == 0xAA){
-      switch (recivedData)
-      {
-        case 0xA0:
-          PORTD &= ~(1<<PB7);
-          break;
-        case 0xA1:
-          PORTD |= (1<<PB7);
-          break;
-        default:
-          break;
-      }
+      if(recivedData == 0xA0) CLEAR_PORT(PORTB, PB0);
+      else if(recivedData == 0xA1) SET_PORT(PORTB, PB0);
     }
 
     if(requested_data == 0xBB){
-      switch (recivedData)
-      {
-        case 0xB0:
-          PORTA &= ~(1<<PB7);
-          break;
-        case 0xB1:
-          PORTA |= (1<<PB7);
-          break;
-        default:
-          break;
-      }
+      if(recivedData == 0xB0) CLEAR_PORT(PORTB, PB1);
+      else if(recivedData == 0xB1) SET_PORT(PORTB, PB1);
     }
 
 }
 
+void config(){
+  sei();
+  SET_PULL_UP_RESISTOR_ON_SDA_SCL;
+  SET_SLAVE_ADRESS_7BIT(50);
+}
+
 int main(){
-    DDRD = 0x80;
-    DDRB = 255;
-    sei();
-    SET_PULL_UP_RESISTOR_ON_SDA_SCL;
-    DDRA = 0b11111111; // kunn for debuging ikke nødvendign
-    SET_SLAVE_ADRESS_7BIT(50);
+    config();
     interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
     interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE();
+
+    uint8_t activate_B_ports[] = {0,1};
+    ACTIVATE_OUTPUT_PORTS_m(DDRB, activate_B_ports);
+
 
     while(1);
     return 0;

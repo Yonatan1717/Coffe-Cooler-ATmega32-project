@@ -7,7 +7,10 @@
 // PR - Production Ready
 
 #define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
-#define ACTIVATE_REGISTERS_m(DDRx, DDxn_liste) ACTIVATE_REGISTERS(&DDRx, DDxn_liste)
+#define ACTIVATE_OUTPUT_PORTS_m(DDRx, DDxn_liste) ACTIVATE_OUTPUT_PORTS(&DDRx, DDxn_liste)
+#define SET_PORTS_m(PORTx, Pxn_list) ACTIVATE_OUTPUT_PORTS(&PORTx, Pxn_list)
+#define SET_PORT(PORTx, Pxn) PORTx |= (1<<Pxn)
+#define CLEAR_PORT(PORTx, Pxn) PORTx &= ~(1<<Pxn)
 #define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs) LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
 
 // // Enable I2C
@@ -163,9 +166,15 @@ int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint
 }
 
 // 8
-void ACTIVATE_REGISTERS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. DDRC, DDC0, DDC3, DDC5
+void ACTIVATE_OUTPUT_PORTS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. DDRC, DDC0, DDC3, DDC5
     for(uint8_t i = 0; (DDxn[i] != 0 || i == 0) && i<8; i++){
         *DDRx_Register |= (1<<DDxn[i]);
+    }
+}
+
+void SET_PORTS(volatile uint8_t *PORTx_Register, uint8_t *Pxn){ //E.g. DDRC, DDC0, DDC3, DDC5
+    for(uint8_t i = 0; (Pxn[i] != 0 || i == 0) && i<8; i++){
+        *PORTx_Register |= (1<<Pxn[i]);
     }
 }
 
@@ -191,7 +200,7 @@ void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile ui
             *PORT_NAME = (1<<PORT_NAMES[4]);
             break;
         default:
-            ACTIVATE_REGISTERS(PORT_NAME,PORT_NAMES);
+            ACTIVATE_OUTPUT_PORTS(PORT_NAME,PORT_NAMES);
             break;
         }
 }
