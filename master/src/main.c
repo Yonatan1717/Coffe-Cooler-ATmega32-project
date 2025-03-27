@@ -27,7 +27,7 @@ ISR(INT1_vect) {
 
 ISR(TWI_vect){
     // uint8_t slave_addr = 50;
-    uint8_t recivedData = reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(18,requested_data);
+    uint8_t recivedData = reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(18,requested_data);
     
     if(requested_data == 0xAA){
       if(recivedData == 0xA0) CLEAR_PORT(PORTB, PB0);

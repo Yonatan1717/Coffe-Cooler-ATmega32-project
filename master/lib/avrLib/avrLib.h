@@ -26,7 +26,7 @@
 
 // Send start condition
 #define TWI_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<< TWSTA)| (1<<TWIE)| (1<<TWEA)
-#define recivedData(buffer) buffer = TWDR
+#define readData(buffer) buffer = TWDR
 #define sendData(data) TWDR = data
 
 // Transmit stop condition
@@ -292,14 +292,82 @@ void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() {
   }
 
 
-uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
+uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
+    uint8_t recived_data = 0;
+
+    switch (STATUS_CODE)
+    {
+        case 0x08:
+            TWI_SLA_W(dest_slave_addr_7bit);
+            TWI_SET_TWINT_ACK;
+            break;
+            
+        case 0x10:
+            TWI_SLA_R(dest_slave_addr_7bit);
+            TWI_SET_TWINT_ACK;
+            break;
+
+        case 0x18:
+            sendData(requested_value);
+            TWI_SET_TWINT_ACK;
+            break;
+        
+        case 0x20:
+            // PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
+            TWI_START;
+            break;
+
+        case 0x28:
+            TWI_START;
+            break;
+        
+        case 0x30: 
+            // PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
+            readData(recived_data);
+            TWI_STOP;
+            break;
+        
+        case 0x38:
+            // PORTB ^= (1<<PB2); // kunn for debuging ikke nødvendign
+            TWI_SET_TWINT_ACK;
+            break;
+
+        case 0x40:
+            // PORTB ^= (1<<PB3); // kunn for debuging ikke nødvendign
+            TWI_SET_TWINT_NOT_ACK;
+            break;
+
+        case 0x48:
+            // PORTB ^= (1<<PB4); // kunn for debuging ikke nødvendign
+            TWI_START;
+            break;
+
+        case 0x50: 
+            // PORTB ^= (1<<PB5); // kunn for debuging ikke nødvendign
+            readData(recived_data); 
+            TWI_SET_TWINT_NOT_ACK;
+            break;
+
+        case 0x58:
+            readData(recived_data);
+            TWI_STOP;
+            break;
+        default:
+            break;
+    }
+
+    return recived_data;
+}
+
+
+uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
     /*
     !!!!!!!!!!!!!!!!!! 
     MÅ LESE dette er ikke ferdig produkt denne er mest brukt for testeing mye av koden under
     kan kuttes ned
     !!!!!!!!!!!!!!!!!!!!
     */
-    uint8_t recivedData = 0;
+    uint8_t recived_data = 0;
     static char mode = 'w';
 
 
@@ -318,7 +386,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(uint8_t dest_slave_add
                 break;
 
             case 0x18:
-                TWDR = requested_value;
+                sendData(requested_data);
                 // PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
                 TWI_SET_TWINT_ACK;
                 break;
@@ -336,7 +404,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(uint8_t dest_slave_add
 
             case 0x30: 
                 // PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
-                recivedData = TWDR; 
+                readData(recived_data); // mest sannsynelig ikke nødvending 
                 TWI_STOP;
                 break;
 
@@ -381,12 +449,12 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(uint8_t dest_slave_add
 
             case 0x50: 
                 // PORTB ^= (1<<PB5); // kunn for debuging ikke nødvendign
-                recivedData = TWDR; 
+                readData(recived_data); 
                 TWI_SET_TWINT_NOT_ACK;
                 break;
 
             case 0x58:
-                recivedData = TWDR;
+                recived_data = TWDR;
                 // PORTB ^= (1<<PB6); // kunn for debuging ikke nødvendign
                 mode = 'w';
                 TWI_STOP;
@@ -396,11 +464,8 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR(uint8_t dest_slave_add
         }
     }
 
-    return recivedData;
+    return recived_data;
 }
-
-
-
 
 
 ////////////////////// debounce /////////////////////////////
