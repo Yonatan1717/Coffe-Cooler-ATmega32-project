@@ -242,6 +242,7 @@ void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() {
 
 uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
     uint8_t recived_data = 0;
+    static uint8_t send_error_count = 0;
 
     switch (STATUS_CODE)
     {
@@ -251,7 +252,9 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
             break;
             
         case 0x10:
-            TWI_SLA_R(dest_slave_addr_7bit);
+            if(send_error_count) TWI_SLA_W(dest_slave_addr_7bit);
+            else TWI_SLA_R(dest_slave_addr_7bit);
+
             TWI_SET_TWINT;
             break;
 
@@ -261,15 +264,22 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
             break;
         
         case 0x20:
-            TWI_START;
+            send_error_count++;
+            if(send_error_count < 2) TWI_START;
+            else if (send_error_count >= 2){
+                send_error_count = 0;
+                TWI_STOP;
+            }
             break;
 
         case 0x28:
+            send_error_count = 0;
             TWI_START;
             break;
         
         case 0x30: 
-            TWI_STOP;
+            send_error_count = 0;
+            TWI_START; 
             break;
         
         case 0x38:
@@ -284,7 +294,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
             TWI_START;
             break;
 
-        case 0x50: 
+        case 0x50: // won't get inn herer
             TWI_readData(recived_data); 
             TWI_SET_TWINT;
             break;
