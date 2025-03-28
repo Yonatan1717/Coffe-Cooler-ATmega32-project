@@ -45,6 +45,7 @@
 #define SERVO_MIDDLE(OCR1x) OCR1x = 1500 - 1
 #define SERVO_R_90d_CLOCKWISE_FROM_MIDDLE(OCR1x) OCR1x = 500 - 1 
 #define SERVO_R_90d_ANTI_CLOCKWISE_FROM_MIDDLE(OCR1x) OCR1x = 2500 - 1
+#define SERVO_ANGLE_MOVE_STARTS_AT_ACLOCKWISE_90d(OCR1x, angle) if(OCR1x != 500-1 + (2000/180)*angle) OCR1x = 500-1 + (2000/180)*angle; else SERVO_MIDDLE(OCR1x);
 
 
 ////////////////////////////////////// funksjoner for A4 /////////////////////////////////////////
@@ -172,6 +173,7 @@ void ACTIVATE_OUTPUT_PORTS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.
     }
 }
 
+// 7
 void SET_PORTS(volatile uint8_t *PORTx_Register, uint8_t *Pxn){ //E.g. DDRC, DDC0, DDC3, DDC5
     for(uint8_t i = 0; (Pxn[i] != 0 || i == 0) && i<8; i++){
         *PORTx_Register |= (1<<Pxn[i]);

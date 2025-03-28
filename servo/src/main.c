@@ -5,10 +5,10 @@
 #include <avrLib.h>
 
 ISR(INT0_vect) {  
-  if (debounce(&PIND, PD2)) SERVO_R_90d_ANTI_CLOCKWISE_FROM_MIDDLE(OCR1A); 
+  if (debounce(&PIND, PD2)) SERVO_ANGLE(OCR1A,(90+45)); 
 }
 ISR(INT1_vect) {  
-  if (debounce(&PIND, PD3)) SERVO_R_90d_CLOCKWISE_FROM_MIDDLE(OCR1A);
+  if (debounce(&PIND, PD3)) SERVO_ANGLE(OCR1A,45);
 } 
 
 int main(){
