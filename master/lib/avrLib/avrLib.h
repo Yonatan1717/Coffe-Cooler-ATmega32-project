@@ -264,12 +264,12 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
             break;
         
         case 0x20:
-            send_error_count++;
             if(send_error_count < 2) TWI_START;
             else if (send_error_count >= 2){
                 send_error_count = 0;
                 TWI_STOP;
             }
+            send_error_count++;
             break;
 
         case 0x28:
