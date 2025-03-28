@@ -1,3 +1,19 @@
+;!!!!!!!!!!!!!!!!!!!! This must be pasted inn in all new projects "platformio.ini" file !!!!!!!!!!!!!!!!!!!!
+
+[env:ATmega32]
+platform = atmelavr
+board = ATmega32
+upload_protocol = usbtiny
+board_build.mcu = atmega32
+board_build.f_cpu = 1000000L
+build_flags =
+    -I../avrLib
+
+upload_flags =     
+    -e
+
+;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 Git Commands:
   !! Alltid sjekk at du er i main før du begynner å kode bruk <command: git status> -> den vil fortelle deg 
      hvilken branch du er i om du er oppdatert med forhold til "orgin" og om du har noe du må "commite".
