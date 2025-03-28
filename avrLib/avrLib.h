@@ -507,7 +507,7 @@ uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A(uint8_t type_0_fast_1_phase_correct, uin
         DDRD |= (1<<PD5);
     
         Clock_Select_Description_for_a_Timer_Counter_n(1,1);
-        TOP = (1000000/(prescaler*frequency)) - 1;
+        TOP = (F_CPU/(prescaler*frequency)) - 1;
         ICR1 = TOP;
         SERVO_MIDDLE(OCR1A);
     }
