@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <util/delay.h>
 
+
+#define MGU_G1_O_OM(DDRx) DDRx |= 0x07
+#define LCD_DATA_AC_INS_OM(DDRx) DDRx = 0xFF
+
 // nyttige macros //
 #define ACTIVATE_OUTPUT_PORTS_m(DDRx, DDxn_liste) ACTIVATE_OUTPUT_PORTS(&DDRx, DDxn_liste)
 #define SET_PORTS_m(PORTx, Pxn_list) ACTIVATE_OUTPUT_PORTS(&PORTx, Pxn_list)
@@ -374,113 +378,6 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
     return recived_data;
 }
 
-uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_14_STATUS_CODE(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
-    /*
-    !!!!!!!!!!!!!!!!!! 
-    MÅ LESE dette er ikke ferdig produkt denne er mest brukt for testeing mye av koden under
-    kan kuttes ned
-    !!!!!!!!!!!!!!!!!!!!
-    */
-    uint8_t recived_data = 0;
-    static char mode = 'w';
-
-
-    if (mode == 'w'){
-        switch (STATUS_CODE)
-        {
-            case 0x08:
-                // PORTA ^= (1<<PB0); // kunn for debuging ikke nødvendign 
-                TWI_SLA_W(dest_slave_addr_7bit);
-                TWI_SET_TWINT_ACK;
-                break;
-                
-            case 0x10:
-                // PORTA ^= (1<<PB1); // kunn for debuging ikke nødvendign
-                TWI_SET_TWINT_ACK;
-                break;
-
-            case 0x18:
-                TWI_sendData(requested_value);
-                // PORTA ^= (1<<PB2); // kunn for debuging ikke nødvendign
-                TWI_SET_TWINT_ACK;
-                break;
-
-            case 0x20:
-                // PORTA ^= (1<<PB3); // kunn for debuging ikke nødvendign
-                TWI_START;
-                break;
-
-            case 0x28:
-                // PORTA ^= (1<<PB4); // kunn for debuging ikke nødvendign
-                mode = 'r';
-                TWI_START;
-                break;
-
-            case 0x30: 
-                // PORTA ^= (1<<PB5); // kunn for debuging ikke nødvendign
-                TWI_readData(recived_data); // mest sannsynelig ikke nødvending 
-                TWI_STOP;
-                break;
-
-            case 0x38:
-                // PORTA ^= (1<<PB6); // kunn for debuging ikke nødvendign
-                TWI_START;
-                break;
-            default:
-                break;
-        }
-    }
-
-    if (mode == 'r'){
-        switch (STATUS_CODE)
-        {
-            case 0x08:
-                // PORTB ^= (1<<PB0); // kunn for debuging ikke nødvendign
-                TWI_SLA_R(dest_slave_addr_7bit);
-                TWI_SET_TWINT_ACK;
-                break;
-
-            case 0x10:
-                // PORTB ^= (1<<PB1); // kunn for debuging ikke nødvendign
-                TWI_SLA_R(dest_slave_addr_7bit);
-                TWI_SET_TWINT_ACK;
-                break;
-
-            case 0x38:
-                // PORTB ^= (1<<PB2); // kunn for debuging ikke nødvendign
-                TWI_SET_TWINT_ACK;
-                break;
-
-            case 0x40:
-                // PORTB ^= (1<<PB3); // kunn for debuging ikke nødvendign
-                TWI_SET_TWINT;
-                break;
-
-            case 0x48:
-                // PORTB ^= (1<<PB4); // kunn for debuging ikke nødvendign
-                TWI_START;
-                break;
-
-            case 0x50: 
-                // PORTB ^= (1<<PB5); // kunn for debuging ikke nødvendign
-                TWI_readData(recived_data); 
-                TWI_SET_TWINT;
-                break;
-
-            case 0x58:
-                recived_data = TWDR;
-                // PORTB ^= (1<<PB6); // kunn for debuging ikke nødvendign
-                mode = 'w';
-                TWI_STOP;
-                break;
-            default:
-                break;
-        }
-    }
-
-    return recived_data;
-}
-
 uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
     uint8_t recivedData = 0;
     switch (STATUS_CODE)
@@ -578,3 +475,30 @@ void ADC_AUTO_TRIGGER_FREERUNNING_MODE(){
 }
 
 
+//LCD
+void  MPU_G1_PORT(uint8_t RS, uint8_t RW, uint8_t E){
+    PORTB &= 0b11111000; 
+    PORTB |= (E<<PB2) | (RW << PB1) | (RS<<PB0);
+}
+
+void LCD_W_DATA(uint8_t data) {
+    PORTA = data;
+    MPU_G1_PORT(1,0,1); // RS=1, RW=0, E=1
+    _delay_us(1);
+    MPU_G1_PORT(1,0,0); // E=0
+    _delay_ms(2);
+}
+
+
+void LCD_AC(uint8_t BF, uint8_t AC6, uint8_t AC5, uint8_t AC4, uint8_t AC3, uint8_t AC2, uint8_t AC1, uint8_t AC0) {
+    PORTA = (BF << PA7)|(AC6 << PA6)|(AC5 << PA5)|(AC4 << PA4)|(AC3 << PA3)|(AC2 << PA2)|(AC1 << PA1)|(AC0 << PA0);
+}
+
+
+void LCD_INS(uint8_t AC5, uint8_t AC4, uint8_t AC3, uint8_t AC2, uint8_t AC1, uint8_t AC0) {
+    PORTA = (AC5 << PA5)|(AC4 << PA4)|(AC3 << PA3)|(AC2 << PA2)|(AC1 << PA1)|(AC0 << PA0);
+    MPU_G1_PORT(0,0,1); // RS=0, RW=0, E=1
+    _delay_us(1);
+    MPU_G1_PORT(0,0,0); // E=0
+    _delay_ms(2);       // Give LCD time to process
+}
