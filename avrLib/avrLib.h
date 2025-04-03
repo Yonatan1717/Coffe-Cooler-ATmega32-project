@@ -6,8 +6,19 @@
 #include <util/delay.h>
 
 
-#define MGU_G1_O_OM(DDRx) DDRx |= 0x07
-#define LCD_DATA_AC_INS_OM(DDRx) DDRx = 0xFF
+#define cmd_ddrx DDRC
+#define cmd_port PORTC
+#define E PC1
+#define RS PC0
+
+#define data_ddrx DDRD
+#define data_port PORTD
+
+#define LCD_cmd_OM cmd_ddrx |= (1<<E) | (1<<RS)
+#define LCD_data_OM data_ddrx = 0xFF
+
+#define LCD_EE cmd_port |= (1<<E)
+#define LCD_DE cmd_port &= ~(1<<E)
 
 // nyttige macros //
 #define ACTIVATE_OUTPUT_PORTS_m(DDRx, DDxn_liste) ACTIVATE_OUTPUT_PORTS(&DDRx, DDxn_liste)
@@ -476,29 +487,29 @@ void ADC_AUTO_TRIGGER_FREERUNNING_MODE(){
 
 
 //LCD
-void  MPU_G1_PORT(uint8_t RS, uint8_t RW, uint8_t E){
-    PORTB &= 0b11111000; 
-    PORTB |= (E<<PB2) | (RW << PB1) | (RS<<PB0);
+void  LCD_RS_RW(uint8_t Rs){
+    cmd_port &= ~(1<<RS);
+    cmd_port |= (Rs << RS);
 }
 
-void LCD_W_DATA(uint8_t data) {
-    PORTA = data;
-    MPU_G1_PORT(1,0,1); // RS=1, RW=0, E=1
+void wait(){
+    LCD_EE;
     _delay_us(1);
-    MPU_G1_PORT(1,0,0); // E=0
+    LCD_DE;
     _delay_ms(2);
 }
 
-
-void LCD_AC(uint8_t BF, uint8_t AC6, uint8_t AC5, uint8_t AC4, uint8_t AC3, uint8_t AC2, uint8_t AC1, uint8_t AC0) {
-    PORTA = (BF << PA7)|(AC6 << PA6)|(AC5 << PA5)|(AC4 << PA4)|(AC3 << PA3)|(AC2 << PA2)|(AC1 << PA1)|(AC0 << PA0);
+void LCD_data(uint8_t data) {
+    LCD_RS_RW(1); 
+    data_port = data;
+    wait();
+    
 }
 
 
-void LCD_INS(uint8_t AC5, uint8_t AC4, uint8_t AC3, uint8_t AC2, uint8_t AC1, uint8_t AC0) {
-    PORTA = (AC5 << PA5)|(AC4 << PA4)|(AC3 << PA3)|(AC2 << PA2)|(AC1 << PA1)|(AC0 << PA0);
-    MPU_G1_PORT(0,0,1); // RS=0, RW=0, E=1
-    _delay_us(1);
-    MPU_G1_PORT(0,0,0); // E=0
-    _delay_ms(2);       // Give LCD time to process
+
+void LCD_ins(uint8_t cmd) {
+    LCD_RS_RW(0); 
+    data_port = cmd;
+    wait();    
 }
