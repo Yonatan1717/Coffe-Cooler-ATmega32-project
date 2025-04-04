@@ -1,9 +1,9 @@
-#define F_CPU 1000000UL
+//#define F_CPU 1000000UL // using a program that lets you set the F_CPU when crating a project 
 #define __DELAY_BACKWARD_COMPATIBLE__
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <stdfix-avrlibc.h>/
 #include <avrLib.h>
+#include <I2C.h>
 
 uint8_t requested_data = 0;
 uint8_t recived_data = 0;
