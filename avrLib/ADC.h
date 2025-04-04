@@ -1,0 +1,73 @@
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <math.h>
+#include <stdlib.h>
+#include <util/delay.h>
+
+#define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
+#define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs)LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
+#define ADC_SINGLE_Vinput_RESULT ((ADCH<<8) | (ADCL))
+
+
+// 1
+void ADC_Prescaler_Selections(uint8_t bit){
+    // side 217, Table 85
+    ADCSRA &= ~((1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2));
+    
+    if(bit == 8) ADCSRA |= (1<<ADPS1) | (1<<ADPS0);
+    else if(bit == 16) ADCSRA |= (1<<ADPS2);
+    else exit(3);
+}
+
+
+// 2
+void Input_Channel_and_Gain_Selection_Set_ADMUX_bits(uint8_t ADMUX_bits[]){
+    // side 214, tabell 84, kan også brukes til å aktivere alle andre bits i ADMUX
+    ADMUX &= 0xF0;
+    for(uint8_t i = 0; (ADMUX_bits[i] != 0 || i == 0) && i<8; i++) ADMUX |= (1<<ADMUX_bits[i]);
+}
+// 3
+void Input_Channel_and_Gain_Selection_Clear_ADMUX_bits(uint8_t ADMUX_bits[]){
+    // side 214, tabell 84, kan også brukes til å deaktivere alle andre bits i ADMUX
+    for(uint8_t i = 0; (ADMUX_bits[i] != 0 || i == 0) && i<8; i++) ADMUX ^= (1<<ADMUX_bits[i]);
+}
+// 4
+void ADC_Auto_Trigger_Enables_A_Lot_Of_Things_uT0(uint16_t prescaler, uint16_t timeintervall_ms){
+    ///     Sets T0 CTC mode and calculates OCRn value for compare match      ///
+
+    //side 80, Table 38.
+    TCCR0 = (1<<WGM01);
+    TIMSK = (1 << OCIE0);
+    
+    //Regn ut n_OCRn for OCRn for å utføre compare match i Timer0
+    uint16_t TOP = round((timeintervall_ms*1000)/prescaler);
+    if(TOP > 255) TOP = 255;
+    OCR0 = (uint8_t) TOP;
+    TCCR0 |= (1 << CS00) | (1 << CS02);
+    
+    ///     Enables Auto Trigger with T0 CTC as source    ///
+    
+    // side 216, Table 84
+    SFIOR &= ~((1<<ADTS2)|(1<<ADTS1)|(1<<ADTS0)); //Clears register
+    SFIOR |= (1<<ADTS1)|(1<<ADTS0); //Enables T0 Compare match Trigger source
+    
+    //Auto trigger for ADC enable
+    ADCSRA |= (1<<ADATE) | (1<<ADIE) | (1<< ADEN);
+
+}
+
+// 10
+int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
+    // side 217
+    
+    //add lavere byte av resultat til ADC 
+    int16_t ADC_resultat = ADCL;
+    //add høyre byte av resultat til ADC
+    ADC_resultat |= (ADCH<<8);
+
+    if ((ADC_resultat & (1<<9))) ADC_resultat |= (0b11111100 <<8);
+    
+    int16_t Vdiff =  ((ADC_resultat + 0.5) * Vref) / (512);
+    
+    return Vdiff;
+}

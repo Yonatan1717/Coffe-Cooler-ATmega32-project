@@ -29,9 +29,7 @@
 
 
 // A4 //
-#define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
-#define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs)LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
-#define ADC_SINGLE_Vinput_RESULT ((ADCH<<8) | (ADCL))
+
 
 // servo
 #define SERVO_MIDDLE(OCR1x) OCR1x = 1500 - 1
@@ -40,60 +38,7 @@
 #define SERVO_ANGLE_MOVE_STARTS_AT_ACLOCKWISE_90d(OCR1x, angle) if(OCR1x != 500-1 + (2000/180)*angle) OCR1x = 500-1 + (2000/180)*angle; else SERVO_MIDDLE(OCR1x);
 #define SERVO_TURN_BASED_ON_ADC_RESULT(OCR1x, result) OCR1x = result + 500
 
-
-////////////////////////////////////// funksjoner for A4 /////////////////////////////////////////
-
 // 1
-void ADC_Prescaler_Selections(uint8_t bit){
-    // side 217, Table 85
-    ADCSRA &= ~((1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2));
-    
-    if(bit == 8) ADCSRA |= (1<<ADPS1) | (1<<ADPS0);
-    else if(bit == 16) ADCSRA |= (1<<ADPS2);
-    else exit(3);
-}
-
-// 2
-void Input_Channel_and_Gain_Selection_Set_ADMUX_bits(uint8_t ADMUX_bits[]){
-    // side 214, tabell 84, kan også brukes til å aktivere alle andre bits i ADMUX
-    ADMUX &= 0xF0;
-    for(uint8_t i = 0; (ADMUX_bits[i] != 0 || i == 0) && i<8; i++) ADMUX |= (1<<ADMUX_bits[i]);
-}
-
-// 3
-void Input_Channel_and_Gain_Selection_Clear_ADMUX_bits(uint8_t ADMUX_bits[]){
-    // side 214, tabell 84, kan også brukes til å deaktivere alle andre bits i ADMUX
-    for(uint8_t i = 0; (ADMUX_bits[i] != 0 || i == 0) && i<8; i++) ADMUX ^= (1<<ADMUX_bits[i]);
-}
-
-// 4
-void ADC_Auto_Trigger_Enables_A_Lot_Of_Things_uT0(uint16_t prescaler, uint16_t timeintervall_ms){
-    
-    
-    ///     Sets T0 CTC mode and calculates OCRn value for compare match      ///
-
-    //side 80, Table 38.
-    TCCR0 = (1<<WGM01);
-    TIMSK = (1 << OCIE0);
-    
-    //Regn ut n_OCRn for OCRn for å utføre compare match i Timer0
-    uint16_t TOP = round((timeintervall_ms*1000)/prescaler);
-    if(TOP > 255) TOP = 255;
-    OCR0 = (uint8_t) TOP;
-    TCCR0 |= (1 << CS00) | (1 << CS02);
-    
-    ///     Enables Auto Trigger with T0 CTC as source    ///
-    
-    // side 216, Table 84
-    SFIOR &= ~((1<<ADTS2)|(1<<ADTS1)|(1<<ADTS0)); //Clears register
-    SFIOR |= (1<<ADTS1)|(1<<ADTS0); //Enables T0 Compare match Trigger source
-    
-    //Auto trigger for ADC enable
-    ADCSRA |= (1<<ADATE) | (1<<ADIE) | (1<< ADEN);
-
-}
-
-// 5
 int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint16_t bit_description){
     // side 127 tabell 54 for clock 2
     // side 110 tabell 48 for clock 1
@@ -159,21 +104,21 @@ int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint
     return bit_description;
 }
 
-// 8
+// 2
 void ACTIVATE_OUTPUT_PORTS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. DDRC, DDC0, DDC3, DDC5
     for(uint8_t i = 0; (DDxn[i] != 0 || i == 0) && i<8; i++){
         *DDRx_Register |= (1<<DDxn[i]);
     }
 }
 
-// 7
+// 3
 void SET_PORTS(volatile uint8_t *PORTx_Register, uint8_t *Pxn){ //E.g. DDRC, DDC0, DDC3, DDC5
     for(uint8_t i = 0; (Pxn[i] != 0 || i == 0) && i<8; i++){
         *PORTx_Register |= (1<<Pxn[i]);
     }
 }
 
-// 9
+// 4
 void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile uint8_t *PORT_NAME,uint8_t PORT_NAMES[]){
     //ADDS 2500 to V_difference since SWITCH statements can't be zero
     uint8_t difference = round(((V_Difference+2500)/1000));
@@ -200,25 +145,7 @@ void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile ui
         }
 }
 
-// 10
-int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
-    // side 217
-    
-    //add lavere byte av resultat til ADC 
-    int16_t ADC_resultat = ADCL;
-    //add høyre byte av resultat til ADC
-    ADC_resultat |= (ADCH<<8);
-
-    if ((ADC_resultat & (1<<9))) ADC_resultat |= (0b11111100 <<8);
-    
-    int16_t Vdiff =  ((ADC_resultat + 0.5) * Vref) / (512);
-    
-    return Vdiff;
-}
-
-
-
-//////////////////////////////////////// funksjoner for A5 //////////////////////////////////////////////////////
+// 5
 void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {
     sei();  
   // configuration for the interrupt  
@@ -230,6 +157,7 @@ void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {
   PORTD |= (1 << PD2);  // Enable pull-up resistor on PD2  
 } 
 
+// 6
 void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() { 
     sei(); 
     // configuration for the interrupt  
@@ -243,6 +171,7 @@ void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() {
 
 ////////////////////// debounce /////////////////////////////
 
+// 7
 uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {  
     static uint8_t buttonPressed = 1;  
     if ((pin_port & (1 << bitPosition)) == 0) {  
@@ -255,7 +184,8 @@ uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {
     }  
     return 0;  
   }  
-  
+
+// 8
 uint8_t debounce(volatile uint8_t *pin_port, uint8_t bitPosition) {  
 // debounce function that takes in volatile variable uint8 pointer pin_port and integer bitPosition  
 if (pressed(*pin_port, bitPosition)) {  
@@ -295,30 +225,63 @@ void ADC_AUTO_TRIGGER_FREERUNNING_MODE(){
 }
 
 
-//LCD
-void  LCD_RS_RW(uint8_t Rs){
-    cmd_port &= ~(1<<RS);
-    cmd_port |= (Rs << RS);
-}
 
-void wait(){
-    LCD_EE;
-    _delay_us(1);
-    LCD_DE;
-    _delay_ms(2);
-}
 
-void LCD_data(uint8_t data) {
-    LCD_RS_RW(1); 
-    data_port = data;
-    wait();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// //LCD
+// void  LCD_RS_RW(uint8_t Rs){
+//     cmd_port &= ~(1<<RS);
+//     cmd_port |= (Rs << RS);
+// }
+
+// void wait(){
+//     LCD_EE;
+//     _delay_us(1);
+//     LCD_DE;
+//     _delay_ms(2);
+// }
+
+// void LCD_data(uint8_t data) {
+//     LCD_RS_RW(1); 
+//     data_port = data;
+//     wait();
     
-}
+// }
 
-
-
-void LCD_ins(uint8_t cmd) {
-    LCD_RS_RW(0); 
-    data_port = cmd;
-    wait();    
-}
+// void LCD_ins(uint8_t cmd) {
+//     LCD_RS_RW(0); 
+//     data_port = cmd;
+//     wait();    
+// }
