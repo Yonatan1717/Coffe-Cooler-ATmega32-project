@@ -1,5 +1,4 @@
 //LCD
-#define F_CPU 10000000UL
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -53,6 +52,16 @@ PORTCommand &= ~(1<<E); \
 _delay_us(1530);
 
 
+void PULS_CONTROL_ED(){
+	RS_RW_E_D;
+	E_WAIT_DISABLE_WAIT;
+}
+
+void PULS_CONTROL_DD(){
+	RS_RW_D_D;
+	E_WAIT_DISABLE_WAIT;
+}
+
 void SETUP(){
 		//PB og PA porter
 		DDRCommand |= (1<<RS)|(1<<RW)|(1<<E);//Command ports as output
@@ -69,105 +78,87 @@ void INIT_LCD(){
 
 void FUNCTION_SET(){
 	PORTData = (1<<DB5)|(0b11100);
-	RS_RW_D_D;
-	E_WAIT_DISABLE_WAIT;
+	PULS_CONTROL_DD();
 }
 
 void DISPLAY_ON_OFF(){
 	//Display on/off
 	PORTData = (1<<DB3)|(0b100);
-	RS_RW_D_D;
-	E_WAIT_DISABLE_WAIT;
+	PULS_CONTROL_DD();
 }
 
 void ENTRY_MODE(){
 	PORTData=(1<<DB2)|(0b10);
-	RS_RW_D_D;
-	E_WAIT_DISABLE_WAIT;
+	PULS_CONTROL_DD();
 }
 
 void RETURN_HOME(){
 	PORTData = (1<<DB1);
-	RS_RW_D_D;
-	E_WAIT_DISABLE_WAIT;
+	PULS_CONTROL_DD();
 }
 
 void CLEAR_DISPLAY(){
 	PORTData = (1<<DB0);
-	RS_RW_D_D;
-	E_WAIT_DISABLE_WAIT;
+	PULS_CONTROL_DD();
 }
 
-void WRITE_STRING(){
-	char *str = "Ragnar Thomsen";
-	int i;
-	for (i=0;str[i]!=0;i++){
+void WRITE_STRING(char *str, uint8_t addr){
+	PORTData = (1<<DB7)|(addr);
+	PULS_CONTROL_DD();
 	
-		PORTData = str[i];
-		RS_RW_E_D;
-		E_WAIT_DISABLE_WAIT;
+	while(*str){
+		PORTData = *str++;
+		PULS_CONTROL_ED();
 	}
 }
 
-void WRITE_NUMBER(){
-
+void WRITE_NUMBER(int Number, uint8_t addr){
 	//DDRAM_Adress
-	PORTData = (1<<DB7)|(0x44);
-	RS_RW_D_D;
-	E_WAIT_DISABLE_WAIT;
+	PORTData = (1<<DB7)|(addr);
+	PULS_CONTROL_DD();
 
-	int Number = 2005;
-	char N[16];
-	//Enable RS, disable RW
-	
-	int i;
-	itoa(Number,N,10);
-	for (i=0;N[i]!=0;i++){
-		PORTData=N[i];
-		RS_RW_E_D;
-		E_WAIT_DISABLE_WAIT;
+	char buffer[16];
+
+	itoa(Number,buffer,10);
+	int i = 0;
+	while(buffer[i]){
+		PORTData= buffer[i];
+		PULS_CONTROL_ED();
+		++i;
 	}
 }
 
-void WRITE_STRING_SINGLE(){
-	PORTData = 'A';
-	RS_RW_E_D;
-	E_WAIT_DISABLE_WAIT;
+void WRITE_STRING_SINGLE(char charcter, uint8_t addr){
+	PORTData = (1<<DB7)|(addr);
+	PORTData = charcter;
+	PULS_CONTROL_ED();
 }
 
-void SEND_COMMAND(unsigned char cmnd){
+void SEND_COMMAND(uint8_t cmnd){
 	PORTData = cmnd;
-	RS_RW_D_D;
-	E_WAIT_DISABLE_WAIT;
+	PULS_CONTROL_DD();
+
 }
 
-void WRAP_AROUND(){
+void WRAP_AROUND(uint8_t len, uint8_t start){
 			SEND_COMMAND(0x1c);
-			int compare;
-			int counter=16;
-			compare++;
+
+			static _Bool first = 1;
+			static uint8_t counter = 16;
+			if(first){
+				first = 0;
+				counter -= start;
+			}
+		
+			static compare = 0;
 			if(compare==counter){
 				compare=0;
-				for (int i=0;i<11;i++)
+				for (int i=0;i<(40-len-16);i++)
 				{
 					SEND_COMMAND(0x1c);
 				}
-				counter=29;
+				counter = 16+len;
 			}
+			++compare;
 			_delay_ms(50);
-}
-int main(){
-
-	INIT_LCD();
-	FUNCTION_SET();
-	DISPLAY_ON_OFF();
-	CLEAR_DISPLAY();
-	ENTRY_MODE();
-	WRITE_STRING();
-	WRITE_NUMBER();
-	
-	while(1){
-	}
-	return 0;
-	
 }

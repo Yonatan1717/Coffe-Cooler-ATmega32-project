@@ -160,21 +160,10 @@ void ACTIVATE_REGISTERS(unsigned char *DDRx_Register, unsigned char DDxn[]){ //E
 }
 
 int main(){
-    unsigned char enable_output_port_C[] = {0,1,2,3,4};
-    // unsigned char activate[] = {0,1,2};
-    // ACTIVATE_REGISTERS(&DDRB, activate);
 
-    // unsigned short hello = round((250000/1024));
-    // unsigned short hello2 = round((250*1000)/1024);
-    // printf("%i", SFIOR);
-    // SFIOR &= ~((1<<2)|(1<<1)|(1<<0)); //Clears register
-    // SFIOR |= (1<<1)|(1<<0); //Enables T0 Compare match Trigger source
+    char *helllo = "hello";
 
-    unsigned char hello = 0b01101101;
-
-    SET_SLAVE_ADRESS_7BIT(hello);
-
-    printf("%i,,,,,%i", TWAR, hello);
+    printf("%i", sizeof(helllo));
 
     return 0;
 }
