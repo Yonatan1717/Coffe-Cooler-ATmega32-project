@@ -1,4 +1,4 @@
-//#define F_CPU 1000000UL // using a program that lets you set the F_CPU when crating a project 
+#define F_CPU 1000000UL 
 #define __DELAY_BACKWARD_COMPATIBLE__
 #include <avr/io.h>
 #include <avr/interrupt.h>

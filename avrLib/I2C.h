@@ -10,11 +10,12 @@
 #define TWI_SET_TWINT TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE) // set TWINT
 
 // TWI start, stop and stop/start
-#define TWI_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<< TWSTA)| (1<<TWIE)| (1<<TWEA); TWI_SET_TWINT // Send start condition
+#define TWI_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<< TWSTA)| (1<<TWIE)| (1<<TWEA)// Send start condition
 #define TWI_STOP TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) // Transmit stop condition
 #define TWI_STOP_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) |(1<<TWSTA)
 
 // Read and send data
+#define TWI_readData(buffer) buffer = TWDR// read data
 #define TWI_readData_ack(buffer) buffer = TWDR; TWI_SET_TWINT_ACK // read data
 #define TWI_readData_nack(buffer) buffer = TWDR; TWI_SET_TWINT // read data nack
 #define TWI_sendData_ML(data,transmitt_count) TWDR = data; --(*transmitt_count); TWI_SET_TWINT// send data
@@ -46,11 +47,11 @@ void TWI_send_start(){
     TWI_START;
 }
 
-void TWI_send_sla_w_or_r(uint8_t mode, uint8_t slave_addr){
+void TWI_send_sla_w_or_r(char mode, uint8_t slave_addr){
     if(mode == 'w'){
         TWI_SLA_W(slave_addr);
     }
-    else if('r')
+    else if(mode == 'r')
     {
         TWI_SLA_R(slave_addr);
     }
@@ -67,7 +68,7 @@ void TWI_send_data(uint8_t data, uint8_t last_1){
     }
 }
 
-uint8_t TWI_recive_data(uint8_t ack_1){
+uint8_t TWI_recived_data(uint8_t ack_1){
     uint8_t recived_data = 0;
     if(ack_1)
     {
@@ -142,12 +143,11 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
             break;
 
         case 0x50: // won't get inn herer
-            recived_data = TWI_recive_data(1); 
-            TWI_SET_TWINT;
+            recived_data = TWI_recived_data(1); 
             break;
 
         case 0x58:
-            recived_data = TWI_recive_data(1);
+            TWI_readData(recived_data);
             TWI_send_stop();
             break;
         default:

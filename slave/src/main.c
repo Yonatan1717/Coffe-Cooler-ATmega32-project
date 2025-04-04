@@ -4,13 +4,48 @@
  * Created: 20/03/2025 10:09:38
  * Author : Marshed Mohamed
  */ 
-
- #include <avr/io.h>
  #define F_CPU 1000000UL
+ #include <avr/io.h>
  #include <util/delay.h>
- 
- uint8_t debounce(volatile uint8_t *pinName, uint8_t pinNumber);
- uint8_t pressed(volatile uint8_t *pinName, uint8_t pinNumber, uint8_t *buttonPressedInstructions);
+ #include <avrLib.h>
+
+ uint8_t LEDStatusA = 0xA0; 		//Initializing the initial status of LED_A (off)
+ uint8_t LEDStatusB = 0xB0; 		//Initializing the initial status of LED_B (off)
+ uint8_t presseddCounterA = 0;	//Initializing presseddCounter for button_A
+ uint8_t presseddCounterB = 0;	//Initializing presseddCounter for button_B
+ unsigned char receiveData;		//Initializing storage of received data
+ unsigned char sendData = 0xFF;	//Initializing storage of data to be sent 
+
+ ISR(INT0_vect) {  
+  if (debounce(&PIND, PD2)) { 
+    if (LEDStatusB == 0xB0)					//If the LED_B is OFF
+    {
+      PORTB |= (1<<PB1);					//Switch on LED_B
+      LEDStatusB = 0xB1;					//Save status that the LED_B is on
+    }
+    else if (LEDStatusB == 0xB1)			//If the LED_B is ON
+    {
+      PORTB &= ~(1<<PB1);					//Switch off LED_B
+      LEDStatusB = 0xB0;					//Save status that the LED_B is off
+    }
+  }  
+  
+} 
+
+ISR(INT1_vect) {  
+  if (debounce(&PIND, PD3)) {  
+    if (LEDStatusA == 0xA0)					//If the LED_A is OFF 
+    {
+      PORTB |= (1<<PB0);					//Switch on LED_A
+      LEDStatusA = 0xA1;					//Save status that LED_A is on
+    } 
+    else if (LEDStatusA == 0xA1)			//If the LED_A is ON
+    {
+      PORTB &= ~(1<<PB0);					//Switch off LED_A
+      LEDStatusA = 0xA0;					//Save status that LED_A is off
+    }
+  }  
+} 
  
  int main(void)
  {
@@ -21,45 +56,15 @@
    TWAR = (18<<TWA0);				//Setting the device address to 18 (first 7 MSB)
    TWCR = (1<<TWEA)|(1<<TWEN);		//Enabling TWI with ACK; own SLA will be recognized
  
-   uint8_t LEDStatusA = 0xA0; 		//Initializing the initial status of LED_A (off)
-   uint8_t LEDStatusB = 0xB0; 		//Initializing the initial status of LED_B (off)
-   uint8_t pressedCounterA = 0;	//Initializing pressedCounter for button_A
-   uint8_t pressedCounterB = 0;	//Initializing pressedCounter for button_B
-   unsigned char receiveData;		//Initializing storage of received data
-   unsigned char sendData = 0xFF;	//Initializing storage of data to be sent 
+ 
+   
+   interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
+   interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE();
    
    // hello
    
    while (1)
-   {
-     if (pressed(&PIND, 2, &pressedCounterA))		//If the button is being pressed
-     {
-       if (LEDStatusA == 0xA0)					//If the LED_A is OFF 
-       {
-         PORTB |= (1<<PB0);					//Switch on LED_A
-         LEDStatusA = 0xA1;					//Save status that LED_A is on
-       } 
-       else if (LEDStatusA == 0xA1)			//If the LED_A is ON
-       {
-         PORTB &= ~(1<<PB0);					//Switch off LED_A
-         LEDStatusA = 0xA0;					//Save status that LED_A is off
-       }
-     }
-     
-     if (pressed(&PIND, 3, &pressedCounterB))		//If the button is being pressed
-     {
-       if (LEDStatusB == 0xB0)					//If the LED_B is OFF
-       {
-         PORTB |= (1<<PB1);					//Switch on LED_B
-         LEDStatusB = 0xB1;					//Save status that the LED_B is on
-       }
-       else if (LEDStatusB == 0xB1)			//If the LED_B is ON
-       {
-         PORTB &= ~(1<<PB1);					//Switch off LED_B
-         LEDStatusB = 0xB0;					//Save status that the LED_B is off
-       }
-     }
-     
+   { 
      if ((TWSR & 0xF8) == 0x60)					//If own SLA+W has been received
      {			
        TWCR = (1<<TWINT)|(1<<TWEA)|(1<<TWEN);	//Data byte will be received and ACK will be returned 
@@ -100,35 +105,5 @@
    
  }
  
- uint8_t debounce(volatile uint8_t *pinName, uint8_t pinNumber)
- {
-   if ((*pinName & (1<<pinNumber)) == 0)							//If the button is being pressed
-   {
-     _delay_ms(5);												//wait 5 ms
-     if ((*pinName & (1<<pinNumber)) == 0)						//If the button is still being pressed
-     {
-       return (1);												//return yes the button was pressed
-     }
-   }
-   return (0);
- }
- 
- uint8_t pressed(volatile uint8_t *pinName, uint8_t pinNumber, uint8_t *pressedCounter)
- {
-   
-   if (debounce(pinName,pinNumber))														//If the button is being pressed
-   {
-     if (*pressedCounter == 0)															//If button pressed instructions have NOT been executed
-     {
-       *pressedCounter = 1;															//Button pressed instructions have been executed (once)
-       return (1);
-     }
-   }
-   else
-   {
-     *pressedCounter = 0;																//Button pressed instructions have NOT been executed
-   }
-   return (0);
- }
- 
+
  
