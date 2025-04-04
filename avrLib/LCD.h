@@ -163,7 +163,6 @@ int main(){
 	DISPLAY_ON_OFF();
 	CLEAR_DISPLAY();
 	ENTRY_MODE();
-	_delay_ms(10);
 	WRITE_STRING();
 	WRITE_NUMBER();
 	
