@@ -4,10 +4,10 @@
  * Created: 20/03/2025 10:09:38
  * Author : Marshed Mohamed
  */ 
- #define F_CPU 1000000UL
  #include <avr/io.h>
  #include <util/delay.h>
  #include <avrLib.h>
+ #include <ADC.h>
 
  uint8_t LEDStatusA = 0xA0; 		//Initializing the initial status of LED_A (off)
  uint8_t LEDStatusB = 0xB0; 		//Initializing the initial status of LED_B (off)

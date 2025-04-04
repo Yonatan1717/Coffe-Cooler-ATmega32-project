@@ -6,19 +6,6 @@
 #include <util/delay.h>
 
 
-#define cmd_ddrx DDRC
-#define cmd_port PORTC
-#define E PC1
-#define RS PC0
-
-#define data_ddrx DDRD
-#define data_port PORTD
-
-#define LCD_cmd_OM cmd_ddrx |= (1<<E) | (1<<RS)
-#define LCD_data_OM data_ddrx = 0xFF
-
-#define LCD_EE cmd_port |= (1<<E)
-#define LCD_DE cmd_port &= ~(1<<E)
 
 // nyttige macros //
 #define ACTIVATE_OUTPUT_PORTS_m(DDRx, DDxn_liste) ACTIVATE_OUTPUT_PORTS(&DDRx, DDxn_liste)
@@ -26,9 +13,6 @@
 #define SET_PORT(PORTx, Pxn) PORTx |= (1<<Pxn)
 #define CLEAR_PORT(PORTx, Pxn) PORTx &= ~(1<<Pxn)
 #define TOGGLE_PORT(PORTx, Pxn) PORTx ^= (1<<Pxn)
-
-
-// A4 //
 
 
 // servo
@@ -229,7 +213,19 @@ void ADC_AUTO_TRIGGER_FREERUNNING_MODE(){
 
 
 
+// #define cmd_ddrx DDRC
+// #define cmd_port PORTC
+// #define E PC1
+// #define RS PC0
 
+// #define data_ddrx DDRD
+// #define data_port PORTD
+
+// #define LCD_cmd_OM cmd_ddrx |= (1<<E) | (1<<RS)
+// #define LCD_data_OM data_ddrx = 0xFF
+
+// #define LCD_EE cmd_port |= (1<<E)
+// #define LCD_DE cmd_port &= ~(1<<E)
 
 
 
