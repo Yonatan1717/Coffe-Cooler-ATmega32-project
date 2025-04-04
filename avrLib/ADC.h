@@ -55,8 +55,7 @@ void ADC_Auto_Trigger_Enables_A_Lot_Of_Things_uT0(uint16_t prescaler, uint16_t t
     ADCSRA |= (1<<ADATE) | (1<<ADIE) | (1<< ADEN);
 
 }
-
-// 10
+// 5
 int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
     // side 217
     
@@ -70,4 +69,30 @@ int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
     int16_t Vdiff =  ((ADC_resultat + 0.5) * Vref) / (512);
     
     return Vdiff;
+}
+// 6
+void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile uint8_t *PORT_NAME,uint8_t PORT_NAMES[]){
+    //ADDS 2500 to V_difference since SWITCH statements can't be zero
+    uint8_t difference = round(((V_Difference+2500)/1000));
+
+        switch(difference){
+        case 0:
+            *PORT_NAME = (1<<PORT_NAMES[0]);
+            break;
+        case 1:
+            *PORT_NAME = (1<<PORT_NAMES[1]);
+            break;
+        case 2:
+            *PORT_NAME = (1<<PORT_NAMES[2]);
+            break;
+        case 3:
+            *PORT_NAME = (1<<PORT_NAMES[3]);
+            break;
+        case 4:
+            *PORT_NAME = (1<<PORT_NAMES[4]);
+            break;
+        default:
+            ACTIVATE_OUTPUT_PORTS(PORT_NAME,PORT_NAMES);
+            break;
+        }
 }

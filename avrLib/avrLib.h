@@ -119,33 +119,6 @@ void SET_PORTS(volatile uint8_t *PORTx_Register, uint8_t *Pxn){ //E.g. DDRC, DDC
 }
 
 // 4
-void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile uint8_t *PORT_NAME,uint8_t PORT_NAMES[]){
-    //ADDS 2500 to V_difference since SWITCH statements can't be zero
-    uint8_t difference = round(((V_Difference+2500)/1000));
-
-        switch(difference){
-        case 0:
-            *PORT_NAME = (1<<PORT_NAMES[0]);
-            break;
-        case 1:
-            *PORT_NAME = (1<<PORT_NAMES[1]);
-            break;
-        case 2:
-            *PORT_NAME = (1<<PORT_NAMES[2]);
-            break;
-        case 3:
-            *PORT_NAME = (1<<PORT_NAMES[3]);
-            break;
-        case 4:
-            *PORT_NAME = (1<<PORT_NAMES[4]);
-            break;
-        default:
-            ACTIVATE_OUTPUT_PORTS(PORT_NAME,PORT_NAMES);
-            break;
-        }
-}
-
-// 5
 void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {
     sei();  
   // configuration for the interrupt  
@@ -157,7 +130,7 @@ void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {
   PORTD |= (1 << PD2);  // Enable pull-up resistor on PD2  
 } 
 
-// 6
+// 5
 void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() { 
     sei(); 
     // configuration for the interrupt  
@@ -170,8 +143,7 @@ void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() {
   }
 
 ////////////////////// debounce /////////////////////////////
-
-// 7
+// 6
 uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {  
     static uint8_t buttonPressed = 1;  
     if ((pin_port & (1 << bitPosition)) == 0) {  
@@ -185,7 +157,7 @@ uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {
     return 0;  
   }  
 
-// 8
+// 7
 uint8_t debounce(volatile uint8_t *pin_port, uint8_t bitPosition) {  
 // debounce function that takes in volatile variable uint8 pointer pin_port and integer bitPosition  
 if (pressed(*pin_port, bitPosition)) {  
@@ -199,7 +171,7 @@ return 0;
 
 
 ///////////////////// for servo motor ////////////////////////
-
+// 8
 uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A(uint8_t type_0_fast_1_phase_correct, uint16_t frequency, uint16_t prescaler){
     uint32_t TOP = 0;
     if(!type_0_fast_1_phase_correct){
@@ -217,6 +189,7 @@ uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A(uint8_t type_0_fast_1_phase_correct, uin
     return TOP;
 }
 
+// 9
 void ADC_AUTO_TRIGGER_FREERUNNING_MODE(){
     sei();
     ADCSRA |= (1<<ADEN) | (1<<ADIE) | (1<<ADSC) | (1<<ADATE);
