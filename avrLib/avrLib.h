@@ -19,7 +19,7 @@
 #define SERVO_MIDDLE(OCR1x) OCR1x = 1500 - 1
 #define SERVO_R_90d_CLOCKWISE_FROM_MIDDLE(OCR1x) OCR1x = 500 - 1 
 #define SERVO_R_90d_ANTI_CLOCKWISE_FROM_MIDDLE(OCR1x) OCR1x = 2500 - 1
-#define SERVO_ANGLE_MOVE_STARTS_AT_ACLOCKWISE_90d(OCR1x, angle) if(OCR1x != 500-1 + (2000/180)*angle) OCR1x = 500-1 + (2000/180)*angle; else SERVO_MIDDLE(OCR1x);
+#define SERVO_ANGLE_MOVE_STARTS_AT_ACLOCKWISE_90d(OCR1x, angle) OCR1x = 500-1 + (2000/180)*angle;
 #define SERVO_TURN_BASED_ON_ADC_RESULT(OCR1x, result) OCR1x = result + 500
 
 // 1
@@ -126,6 +126,17 @@ void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() {
     PORTD |= (1 << PD3);  // Enable pull-up resistor on PD2  
   }
 
+  void interruptConfig_INT2_FULLY_READY_LOGICAL_CHANGE() { 
+    sei(); 
+    // configuration for the interrupt  
+    GICR |= (1 << INT2); // external interrupt request 0 enabled (INT0, not INT1)  
+    MCUCR |= (1 << ISC10); // set ISC10 as one so that any logical change on INT0 generates an interrupt request  
+    MCUCR &= ~(1 << ISC11); //clear ISC01 to make it a low level interrupt  
+  
+    DDRD &= ~(1 << PD3); // Set PD2 as input  
+    PORTD |= (1 << PD3);  // Enable pull-up resistor on PD2  
+  }
+
 ////////////////////// debounce /////////////////////////////
 // 6
 uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {  
@@ -173,13 +184,7 @@ uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A(uint8_t type_0_fast_1_phase_correct, uin
     return TOP;
 }
 
-// 9
-void ADC_AUTO_TRIGGER_FREERUNNING_MODE(){
-    sei();
-    ADCSRA |= (1<<ADEN) | (1<<ADIE) | (1<<ADSC) | (1<<ADATE);
-    SFIOR &= ~(1 << ADTS2 | 1 << ADTS1 | 1 << ADTS0);
-    ADC_Prescaler_Selections(16);
-}
+
 
 
 

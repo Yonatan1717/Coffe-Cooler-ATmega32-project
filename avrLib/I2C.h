@@ -11,7 +11,7 @@
 
 // TWI start, stop and stop/start
 #define TWI_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<< TWSTA)| (1<<TWIE)| (1<<TWEA)// Send start condition
-#define TWI_STOP TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) // Transmit stop condition
+#define TWI_STOP TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) |(1<<TWIE) // Transmit stop condition
 #define TWI_STOP_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) |(1<<TWSTA)
 
 // Read and send data
@@ -32,7 +32,7 @@
 #define TWI_BIT_RATE_PRESCALER_64 TWSR = (1<<TWPS1) | (1<<TWPS0)
 
 // Set slave address
-#define SET_SLAVE_ADRESS_7BIT(this_slave_addr_7bit) TWAR |= (this_slave_addr_7bit << 1)
+#define SET_SLAVE_ADRESS_7BIT(this_slave_addr_7bit) TWAR = (this_slave_addr_7bit << 1)
 
 // TWI send slave addr and mode
 #define TWI_SLA_W(slave_addr_7bit) TWDR = (slave_addr_7bit << 1); TWI_SET_TWINT

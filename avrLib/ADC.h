@@ -96,3 +96,14 @@ void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile ui
             break;
         }
 }
+
+
+
+
+// 9
+void ADC_AUTO_TRIGGER_FREERUNNING_MODE(){
+    sei();
+    ADCSRA |= (1<<ADEN) | (1<<ADIE) | (1<<ADSC) | (1<<ADATE);
+    SFIOR &= ~(1 << ADTS2 | 1 << ADTS1 | 1 << ADTS0);
+    ADC_Prescaler_Selections(16);
+}
