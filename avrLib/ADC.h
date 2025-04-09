@@ -7,7 +7,7 @@
 #define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
 #define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs)LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
 #define ADC_SINGLE_Vinput_RESULT ((ADCH<<8) | (ADCL))
-
+#define ADC_STATUS (ADCSRA & (1<<ADSC))
 
 // 1
 void ADC_Prescaler_Selections(uint8_t bit){

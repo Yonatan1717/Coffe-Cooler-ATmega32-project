@@ -23,9 +23,13 @@ void ADC_config(){
   uint16_t Selected_Clock_Bit = Clock_Select_Description_for_a_Timer_Counter_n(0,1024); /* 
   select desired prescaler for desired Timer/Counter_n we will be using Timer/Counter0 with 
   bit despcription 1024*/
+  ADCSRA |=(1<<ADEN);
 
-  ADC_Auto_Trigger_Enables_A_Lot_Of_Things_uT0(Selected_Clock_Bit, 100);
-  // this function does all the nessesary configuration to for ADC Auto Trigger to work.
+  TCCR0 |= (1<<WGM01);
+  TIMSK |= (1<<OCIE0);
+
+  uint16_t top = 4;
+  OCR0 = top;
 }
 
 ISR(INT2_vect){
@@ -36,18 +40,16 @@ ISR(INT2_vect){
   
 ISR(INT0_vect) {  
   if (debounce(&PIND, PD2)) { 
-    PORTD ^=(1<<PD7);
     if(!slave){ 
       slave = 50;
-      PORTB ^= (1<<PB3); // Debug
+      PORTB ^= (1<<PB0); // Debug
       TWI_START;
-      ADC_config();
+      ADCSRA |=(1<<ADEN);
     }
     else{
       slave = 0;
-      PORTD ^= (1<<PD6); //debug      
-      ADCSRA &= ~((1 << ADEN) | (1 << ADIE) | (1 << ADATE));
-      SFIOR &= ~((1 << ADTS2) | (1 << ADTS1) | (1 << ADTS0));
+      ADCSRA &=~(1<<ADEN);
+      PORTB ^= (1<<PD2); //debug      
       TWI_STOP;
 
     } 
@@ -61,14 +63,12 @@ ISR(TWI_vect){
   {
   case 0x08:
     TWI_send_sla_w_or_r('w',50);
-    PORTB = 1;
     break;
   case 0x18:
     if(pressedJoyStick){
       TWI_send_stop();
       pressedJoyStick = 0;
     }
-    PORTB = 2;
     TWI_send_data(latestData,0);
     break;
   case 0x28:
@@ -76,7 +76,6 @@ ISR(TWI_vect){
       TWI_send_stop();
       pressedJoyStick = 0;
     }
-    PORTB = 4;
     TWI_send_data(latestData,0);
     break;
   default:
@@ -85,8 +84,12 @@ ISR(TWI_vect){
   
 }
 
-ISR(ADC_vect){
-  latestData = round(ADC/4) - 1;
+ISR(TIMER0_COMP_vect){
+  PORTB |= (1<<PB1);
+  if(!ADC_STATUS){
+    ADCSRA |= (1<<ADSC);
+    latestData = round(ADC/8) - 2;
+  }
 }
 
 void config(){
@@ -99,9 +102,8 @@ void config(){
 
 
 int main(){
-    DDRD |= (1<<PD7) |(1<<PD6);
-    DDRB |= (1<<PB3);
-    config();
+    DDRB |= (1<<PB2) |(1<<PB0) |(1<<PB1); 
+    config(); ADC_config();
     interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
     interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE();
     while(1);

@@ -107,8 +107,8 @@ void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {
     sei();  
   // configuration for the interrupt  
   GICR |= (1 << INT0); // external interrupt request 0 enabled (INT0, not INT1)  
-  MCUCR |= (1 << ISC00); // set ISC00 as one so that any logical change on INT0 generates an interrupt request  
-  MCUCR &= ~(1 << ISC01); //clear ISC01 to make it a low level interrupt  
+  MCUCR |= (1 << ISC01);   // ISC01 = 1
+    MCUCR |= (1 << ISC00);  // ISC00 = 0
 
   DDRD &= ~(1 << PD2); // Set PD2 as input  
   PORTD |= (1 << PD2);  // Enable pull-up resistor on PD2  

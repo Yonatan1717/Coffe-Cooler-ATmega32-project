@@ -28,7 +28,7 @@ ISR(TWI_vect){
     break;
   }
 
-  SERVO_TURN_BASED_ON_ADC_RESULT(OCR1A,((recivedData*4)+1)*2);
+  SERVO_TURN_BASED_ON_ADC_RESULT(OCR1A,((recivedData*8)+2)*2);
 }
 
 void config(){
