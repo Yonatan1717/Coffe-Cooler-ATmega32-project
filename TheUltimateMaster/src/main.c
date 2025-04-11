@@ -44,7 +44,39 @@ ISR(INT0_vect) {
       slave = 50;
       PORTB ^= (1<<PB0); // Debug
       TWI_START;
+      ADMUX = 0;
       ADCSRA |=(1<<ADEN);
+    }
+    else if(slave == 18){
+      slave = 50;
+      PORTB ^= (1<<PB0); // Debug
+      ADMUX = 0;
+      TWI_STOP_START;
+    }
+    else{
+      slave = 0;
+      ADCSRA &=~(1<<ADEN);
+      PORTB ^= (1<<PD2); //debug      
+      TWI_STOP;
+    } 
+    
+  }  
+} 
+
+ISR(INT1_vect) {  
+  if (debounce(&PIND, PD3)) { 
+    if(!slave){ 
+      slave = 18;
+      PORTB ^= (1<<PB0); // Debug
+      TWI_START;
+      ADMUX = 1;
+      ADCSRA |=(1<<ADEN);
+    }
+    else if(slave == 50){
+      slave = 18;
+      PORTB ^= (1<<PB0); // Debug
+      ADMUX = 1;
+      TWI_STOP_START;
     }
     else{
       slave = 0;
@@ -53,16 +85,15 @@ ISR(INT0_vect) {
       TWI_STOP;
 
     } 
-    
-  }  
-} 
+  }
+}  
 
 
 ISR(TWI_vect){
   switch (STATUS_CODE)
   {
   case 0x08:
-    TWI_send_sla_w_or_r('w',50);
+    TWI_send_sla_w_or_r('w',slave);
     break;
   case 0x18:
     if(pressedJoyStick){
