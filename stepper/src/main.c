@@ -53,10 +53,7 @@ void Timer_config(){
 
   sei(); // set Globale Interrupt Enable
 
-  uint16_t Selected_Clock_Bit = Clock_Select_Description_for_a_Timer_Counter_n(1,1024); /* 
-  select desired prescaler for desired Timer/Counter_n we will be using Timer/Counter0 with 
-  bit despcription 1024*/
-  ADCSRA |=(1<<ADEN);
+  uint16_t Selected_Clock_Bit = Clock_Select_Description_for_a_Timer_Counter_n(1,1024); 
 
   TCCR1B |= (1<<WGM12);
   TIMSK |= (1<<OCIE1A);

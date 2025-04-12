@@ -22,8 +22,8 @@
 #define DDRCommand DDRB
 #define PORTCommand PORTB
 
-#define DDRData DDRA
-#define PORTData PORTA
+#define DDRData DDRD
+#define PORTData PORTD 
 
 //Disable RS/RW
 #define RS_RW_D_D \
@@ -63,11 +63,11 @@ void PULS_CONTROL_DD(){
 }
 
 void SETUP(){
-		//PB og PA porter
-		DDRCommand |= (1<<RS)|(1<<RW)|(1<<E);//Command ports as output
-		DDRData |= 0xFF; //Dataports as output
-		_delay_us(1530);//IDK why
-		//
+	//PB og PA porter
+	DDRCommand |= (1<<RS)|(1<<RW)|(1<<E);//Command ports as output
+	DDRData |= 0xFF; //Dataports as output
+	_delay_us(1530);//IDK why
+	//
 }
 
 void INIT_LCD(){

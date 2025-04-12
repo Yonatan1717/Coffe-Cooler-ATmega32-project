@@ -47,13 +47,7 @@ ISR(INT0_vect) {
       ADMUX = 0;
       ADCSRA |=(1<<ADEN);
     }
-    else if(slave == 18){
-      slave = 50;
-      PORTB ^= (1<<PB0); // Debug
-      ADMUX = 0;
-      TWI_STOP_START;
-    }
-    else{
+    else if(slave){
       slave = 0;
       ADCSRA &=~(1<<ADEN);
       PORTB ^= (1<<PD2); //debug      
@@ -72,18 +66,11 @@ ISR(INT1_vect) {
       ADMUX = 1;
       ADCSRA |=(1<<ADEN);
     }
-    else if(slave == 50){
-      slave = 18;
-      PORTB ^= (1<<PB0); // Debug
-      ADMUX = 1;
-      TWI_STOP_START;
-    }
-    else{
+    else if(slave){
       slave = 0;
       ADCSRA &=~(1<<ADEN);
       PORTB ^= (1<<PD2); //debug      
       TWI_STOP;
-
     } 
   }
 }  

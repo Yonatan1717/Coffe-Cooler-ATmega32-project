@@ -13,14 +13,11 @@ int main(){
 	DISPLAY_ON_OFF();
 	CLEAR_DISPLAY();
 	ENTRY_MODE();
-	WRITE_STRING("hell", 0x06);
-	WRITE_NUMBER(17, 0x47);
 	
-  _delay_ms(500);
-	while(1){
     _delay_ms(500);
-    WRAP_AROUND(4,7);
-	}
-	return 0;
-	
+
+	while(1){
+		_delay_ms(500);
+		WRAP_AROUND(4,7);
+	}	
 }
