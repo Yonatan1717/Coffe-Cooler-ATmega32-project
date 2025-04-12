@@ -88,6 +88,69 @@ int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint
     return bit_description;
 }
 
+void Clock_Select_Description_for_a_Timer_Counter_n2(uint8_t timer_clock_num, uint16_t bit_description){
+    // side 127 tabell 54 for clock 2
+    // side 110 tabell 48 for clock 1
+    // side 82 tabell 42 for clock 0
+
+    // exit status code 1: ugyldig timer/clock Number
+    // exit status code 2: ugyldig bit description
+    if(timer_clock_num > 2){
+        exit(1);
+    }
+
+    switch (bit_description)
+    {
+        case 1:
+            if(timer_clock_num == 0){
+                TCCR0 |= (1<<CS00);
+            }else if(timer_clock_num == 1){
+                TCCR1B |= (1<<CS10);
+            }else if(timer_clock_num == 2){
+                TCCR2 |= (1<<CS20);
+            }
+            break;
+        case 8:
+            if(timer_clock_num == 0){
+                TCCR0 |= (1<<CS01);
+            }else if(timer_clock_num == 1){
+                TCCR1B |= (1<<CS11);
+            }else if(timer_clock_num == 2){
+                TCCR2 |= (1<<CS21);
+            }
+            break;
+        case 64:
+            if(timer_clock_num == 0){
+                TCCR0 |= (1<<CS01) |(1<<CS00);
+            }else if(timer_clock_num == 1){
+                TCCR1B |= (1<<CS10) | (1<< CS11);
+            }else if(timer_clock_num == 2){
+                TCCR2 |= (1<<CS22);
+            }
+            break;
+        case 256:
+            if(timer_clock_num == 0){
+                TCCR0 |= (1<<CS02);
+            }else if(timer_clock_num == 1){
+                TCCR1B |= (1<<CS12);
+            }else if(timer_clock_num == 2){
+                TCCR2 |= (1<<CS22) | (1<<CS21);
+            }
+            break;
+        case 1024:
+            if(timer_clock_num == 0){
+                TCCR0 |= (1<<CS00) | (1<<CS02);
+            }else if(timer_clock_num == 1){
+                TCCR1B |= (1<<CS10) | (1<<CS12);
+            }else if(timer_clock_num == 2){
+                TCCR2 |= (1<<CS20) | (1<<CS21) | (1<<CS22);
+            }
+            break;
+        default:
+            exit(2);
+    }
+}
+
 // 2
 void ACTIVATE_OUTPUT_PORTS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. DDRC, DDC0, DDC3, DDC5
     for(uint8_t i = 0; (DDxn[i] != 0 || i == 0) && i<8; i++){
@@ -107,8 +170,8 @@ void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {
     sei();  
   // configuration for the interrupt  
   GICR |= (1 << INT0); // external interrupt request 0 enabled (INT0, not INT1)  
-  MCUCR |= (1 << ISC01);   // ISC01 = 1
-    MCUCR |= (1 << ISC00);  // ISC00 = 0
+  MCUCR |= (1 << ISC00);   // ISC01 = 1
+  MCUCR &= ~(1 << ISC01);  // ISC00 = 0
 
   DDRD &= ~(1 << PD2); // Set PD2 as input  
   PORTD |= (1 << PD2);  // Enable pull-up resistor on PD2  
@@ -119,23 +182,23 @@ void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() {
     sei(); 
     // configuration for the interrupt  
     GICR |= (1 << INT1); // external interrupt request 0 enabled (INT0, not INT1)  
-    MCUCR |= (1 << ISC10); // set ISC10 as one so that any logical change on INT0 generates an interrupt request  
-    MCUCR &= ~(1 << ISC11); //clear ISC01 to make it a low level interrupt  
+    MCUCR |= (1 << ISC10);   
+    MCUCR &= ~(1 << ISC11); 
   
     DDRD &= ~(1 << PD3); // Set PD2 as input  
     PORTD |= (1 << PD3);  // Enable pull-up resistor on PD2  
   }
 
-  void interruptConfig_INT2_FULLY_READY_LOGICAL_CHANGE() { 
-    sei(); 
-    // configuration for the interrupt  
-    GICR |= (1 << INT2); // external interrupt request 0 enabled (INT0, not INT1)  
-    MCUCR |= (1 << ISC10); // set ISC10 as one so that any logical change on INT0 generates an interrupt request  
-    MCUCR &= ~(1 << ISC11); //clear ISC01 to make it a low level interrupt  
-  
-    DDRD &= ~(1 << PD3); // Set PD2 as input  
-    PORTD |= (1 << PD3);  // Enable pull-up resistor on PD2  
-  }
+//  void interruptConfig_INT2_FULLY_READY_LOGICAL_CHANGE() { 
+//     sei(); 
+//     // configuration for the interrupt  
+//     GICR |= (1 << INT2); // external interrupt request 0 enabled (INT0, not INT1)  
+//     MCUCR |= (1 << ISC10); // set ISC10 as one so that any logical change on INT0 generates an interrupt request  
+//     MCUCR &= ~(1 << ISC11); //clear ISC01 to make it a low level interrupt  
+
+//     DDRD &= ~(1 << PD3); // Set PD2 as input  
+//     PORTD |= (1 << PD3);  // Enable pull-up resistor on PD2  
+//   }
 
 ////////////////////// debounce /////////////////////////////
 // 6
@@ -156,7 +219,7 @@ uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {
 uint8_t debounce(volatile uint8_t *pin_port, uint8_t bitPosition) {  
 // debounce function that takes in volatile variable uint8 pointer pin_port and integer bitPosition  
 if (pressed(*pin_port, bitPosition)) {  
-    _delay_ms(5);
+    _delay_ms(20);
     if ((*pin_port & (1 << bitPosition)) == 0) {  
     return 1;  
     }  

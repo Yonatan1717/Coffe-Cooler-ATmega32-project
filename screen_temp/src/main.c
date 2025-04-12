@@ -65,7 +65,7 @@ int main(){
       CLEAR_DISPLAY();
       WRITE_NUMBER((adc_resultat), 0x00);
       ready = 0;
-      _delay_ms(100);
+      _delay_ms(200);
     }
     
   };
