@@ -54,7 +54,7 @@ int main(){
 	ENTRY_MODE();
 
   
-  WRITE_STRING("Starter opp...", 0x00);
+  WRITE_STRING("Booting up", 0x00);
   _delay_ms(1000);
   CLEAR_DISPLAY();
   
@@ -77,6 +77,7 @@ void Timer_config(){
   sei();
   // Clock_Select_Description_for_a_Timer_Counter_n(1,1024); 
   ADC_Noise_Reduse; // set ADC Noise Reduction
+  ADC_Prescaler_Selections(32); // Select prescaler for ADC
   ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
   ADCSRA |= (1<<ADEN) | (1<<ADIE) |(1<<ADSC);
   

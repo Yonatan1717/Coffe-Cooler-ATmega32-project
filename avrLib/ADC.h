@@ -16,7 +16,8 @@ void ADC_Prescaler_Selections(uint8_t bit){
     
     if(bit == 8) ADCSRA |= (1<<ADPS1) | (1<<ADPS0);
     else if(bit == 16) ADCSRA |= (1<<ADPS2);
-    else exit(3);
+    else if(bit == 32) ADCSRA |= (1<<ADPS2) | (1<<ADPS0);
+    
 }
 
 
