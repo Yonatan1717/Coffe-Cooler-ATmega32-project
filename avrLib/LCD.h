@@ -6,9 +6,9 @@
 #include <util/delay.h>
 
 
-#define RS PB0
-#define RW PB1
-#define E PB2
+#define RS PD4
+#define RW PD5
+#define E PD6
 
 #define DB7 PA7
 #define DB6 PA6
@@ -19,11 +19,11 @@
 #define DB1 PA1
 #define DB0 PA0
 
-#define DDRCommand DDRB
-#define PORTCommand PORTB
+#define DDRCommand DDRD
+#define PORTCommand PORTD
 
-#define DDRData DDRD
-#define PORTData PORTD 
+#define DDRData DDRB
+#define PORTData PORTB 
 
 //Disable RS/RW
 #define RS_RW_D_D \

@@ -6,23 +6,14 @@
 #include <I2C.h>
 #include <LCD.h>
 #include <ADC.h>
+#include <USART.h>
 
 volatile uint16_t adc_resultat = 0;
 volatile _Bool ready = 0;
 
 void config();
-void Timer_config();
+void ADC_config();
 
-
-// ISR(TIMER1_COMPA_vect){
-//   if(!ADC_STATUS){
-//     ADCSRA |= (1<<ADSC);
-//   }
-
-//   // OCR0 = (round(ADC/4) - 1);
-//   // OCR2 = 255-(round(ADC/4) - 1);
-
-// }
 
 ISR(ADC_vect) {
   static uint8_t count = 0;
@@ -36,6 +27,7 @@ ISR(ADC_vect) {
     count = 0;
     sum = 0;
     ready = 1;
+    USART_sendData((uint8_t) (round((float) (adc_resultat/3.9))));
   }
 
   ADCSRA |= (1<<ADSC);
@@ -45,6 +37,7 @@ ISR(ADC_vect) {
 
 int main(){
   // DDRD |= (1<<PD6)| (1<<PB5);
+  USART_config();
   
 
   INIT_LCD();
@@ -58,7 +51,7 @@ int main(){
   _delay_ms(1000);
   CLEAR_DISPLAY();
   
-  Timer_config();
+  ADC_config();
 
   while(1){
     if(ready){
@@ -73,31 +66,13 @@ int main(){
 
 
 
-void Timer_config(){
+void ADC_config(){
   sei();
-  // Clock_Select_Description_for_a_Timer_Counter_n(1,1024); 
   ADC_Noise_Reduse; // set ADC Noise Reduction
   ADC_Prescaler_Selections(32); // Select prescaler for ADC
   ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
   ADCSRA |= (1<<ADEN) | (1<<ADIE) |(1<<ADSC);
-  
-  // TCCR1B |= (1<<WGM12);
-  // TIMSK |= (1<<OCIE1A);
-  // uint16_t top = 50;
-  // OCR1A = top;
-
-  // TCCR0 |= (1<<WGM01) | (1<<WGM00);
-  // TCCR0 |= (1<<COM01);
-  // Clock_Select_Description_for_a_Timer_Counter_n(0,64);
-  // uint8_t Top= 50;
-  // OCR0 = Top;
-  // DDRB |= (1<<PB3);
-
-  // TCCR2 |= (1<<WGM21) | (1<<WGM20);
-  // TCCR2 |= (1<<COM21);
-  // Clock_Select_Description_for_a_Timer_Counter_n(2,64);
-  // uint8_t Top2= 50;
-  // OCR2 = Top2;
-  // DDRD |= (1<<PB7);
-  
 }
+
+
+
