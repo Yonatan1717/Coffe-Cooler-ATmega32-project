@@ -89,9 +89,6 @@ ISR(TIMER1_COMPA_vect){
 }
 
 
-
-
-
 int main()
 {
   stepperDriverDDRx |= (1<<dir) | (1<<en) | (1<<step); 
@@ -136,7 +133,6 @@ void Timer_config(){
 }
 
 void config(){
-  DDRB = 255;
   sei();
   SET_SLAVE_ADRESS_7BIT(18);
   TWCR = (1<<TWEA)|(1<<TWEN)|(1<<TWIE)|(1<<TWINT);
