@@ -18,7 +18,7 @@ int main(){
     _delay_ms(1000);
     CLEAR_DISPLAY();
 
-    WRITE_STRING("Birth Place: Somewhere",0x00);
+    WRITE_STRING("Birth Place: Stavanger",0x00);
     WRITE_STRING("Birthdate: 10.10.1010", 0x40);
         
     while(1);
