@@ -83,7 +83,7 @@ void FUNCTION_SET(){
 
 void DISPLAY_ON_OFF(){
 	//Display on/off
-	PORTData = (1<<DB3)|(0b100);
+	PORTData ^= (1<<DB3)|(0b100);
 	PULS_CONTROL_DD();
 }
 
