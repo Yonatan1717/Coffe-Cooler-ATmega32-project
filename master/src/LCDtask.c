@@ -6,8 +6,7 @@
 
 
 int main(){
-    
-    INIT_LCD();
+    SETUP();
     FUNCTION_SET();
     DISPLAY_ON_OFF();
     CLEAR_DISPLAY();

@@ -70,11 +70,6 @@ void SETUP(){
 	//
 }
 
-void INIT_LCD(){
-	DDRCommand |= (1<<RS)|(1<<RW)|(1<<E);
-	DDRData |= 0xFF;
-	_delay_us(1530);
-}
 
 void FUNCTION_SET(){
 	PORTData = (1<<DB5)|(0b11100);
