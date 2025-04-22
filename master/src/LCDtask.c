@@ -12,6 +12,7 @@ int main(){
     DISPLAY_ON_OFF();
     CLEAR_DISPLAY();
     ENTRY_MODE();
+    //testing
     
     
     WRITE_STRING("Booting up", 0x00);
