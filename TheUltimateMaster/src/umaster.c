@@ -73,6 +73,10 @@ ISR(TIMER0_COMP_vect){
   static uint8_t counter = 0;
   static uint32_t sum = 0;
 
+  if(ADC < 500) PORTB = 2;
+  if(ADC > 500) PORTB = 1;
+
+
   if(!ADC_STATUS && !ready){
     sum+=ADC;
     ++counter;
@@ -112,7 +116,7 @@ void ADC_config(){
 
   ADC_Noise_Reduse; // set ADC Noise Reduction
   ADC_Prescaler_Selections(16); // Select prescaler for ADC
-  // ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
+  ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
   ADCSRA |= (1<<ADEN) |(1<<ADSC);
 
   TCCR0 |= (1<<WGM01);
@@ -122,8 +126,8 @@ void ADC_config(){
   OCR0 = top;
 }
 
-
 void config(){
+  DDRB = 0x0F;
   sei();
   SET_PULL_UP_RESISTOR_ON_SDA_SCL;
   SET_SLAVE_ADRESS_7BIT(10);
