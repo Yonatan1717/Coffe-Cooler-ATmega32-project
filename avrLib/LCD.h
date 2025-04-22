@@ -70,7 +70,6 @@ void SETUP(){
 	//
 }
 
-
 void FUNCTION_SET(){
 	PORTData = (1<<DB5)|(0b11100);
 	PULS_CONTROL_DD();
@@ -78,7 +77,7 @@ void FUNCTION_SET(){
 
 void DISPLAY_ON_OFF(){
 	//Display on/off
-	PORTData ^= (1<<DB3)|(0b100);
+	PORTData = (1<<DB3)|(0b100);
 	PULS_CONTROL_DD();
 }
 
@@ -112,6 +111,25 @@ void WRITE_NUMBER(int Number, uint8_t addr){
 	PORTData = (1<<DB7)|(addr);
 	PULS_CONTROL_DD();
 
+	char buffer[16];
+
+	itoa(Number,buffer,10);
+	int i = 0;
+	while(buffer[i]){
+		PORTData= buffer[i];
+		PULS_CONTROL_ED();
+		++i;
+	}
+}
+
+void WRITE_STRING_noAddr(char *str){
+	while(*str){
+		PORTData = *str++;
+		PULS_CONTROL_ED();
+	}
+}
+
+void WRITE_NUMBER_noAddr(int Number){
 	char buffer[16];
 
 	itoa(Number,buffer,10);

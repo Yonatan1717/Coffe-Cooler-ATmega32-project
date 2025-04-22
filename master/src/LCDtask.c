@@ -18,8 +18,8 @@ int main(){
     _delay_ms(1000);
     CLEAR_DISPLAY();
 
-    WRITE_STRING("Birth Place: Stavanger",0x00);
-    WRITE_STRING("Birthdate: 10.10.1010", 0x40);
+    WRITE_STRING("BP: Stavanger",0x00);
+    WRITE_STRING("BD: 10.10.1010", 0x40);
         
     while(1);
     return 0;
