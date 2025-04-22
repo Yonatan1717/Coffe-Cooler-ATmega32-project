@@ -70,11 +70,6 @@ void SETUP(){
 	//
 }
 
-void INIT_LCD(){
-	DDRCommand |= (1<<RS)|(1<<RW)|(1<<E);
-	DDRData |= 0xFF;
-	_delay_us(1530);
-}
 
 void FUNCTION_SET(){
 	PORTData = (1<<DB5)|(0b11100);
@@ -83,7 +78,7 @@ void FUNCTION_SET(){
 
 void DISPLAY_ON_OFF(){
 	//Display on/off
-	PORTData = (1<<DB3)|(0b100);
+	PORTData ^= (1<<DB3)|(0b100);
 	PULS_CONTROL_DD();
 }
 
