@@ -6,6 +6,7 @@
 
 
 int main(){
+
     SETUP();
     FUNCTION_SET();
     DISPLAY_ON_OFF();
@@ -18,11 +19,8 @@ int main(){
     CLEAR_DISPLAY();
 
     WRITE_STRING("Birth Place: Somewhere",0x00);
-    WRITE_STRING("Birthdate: ", 0x40);
-    WRITE_NUMBER_noAddr(10202023);
-    
-    ADC_config();
-    
+    WRITE_STRING("Birthdate: 10.10.1010", 0x40);
+        
     while(1);
     return 0;
 }
