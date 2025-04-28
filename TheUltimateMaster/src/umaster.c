@@ -31,7 +31,7 @@ ISR(INT0_vect) {
 
 ISR(INT1_vect) {  
   if (debounce(&PIND, PD3)) { 
-    slave_handler(0,18);
+    slave_handler(1,18);
   }
 }  
 
@@ -45,7 +45,7 @@ ISR(TWI_vect){
   case 0x18:
     if(sendCount == 0){
       TWI_send_data((latestData>>8),0);
-     ++sendCount;
+      ++sendCount;
     } 
     else if(sendCount == 1){
       TWI_send_data((latestData & 0x00FF),0);
@@ -72,10 +72,6 @@ ISR(TWI_vect){
 ISR(TIMER0_COMP_vect){
   static uint8_t counter = 0;
   static uint32_t sum = 0;
-
-  if(ADC < 500) PORTB = 2;
-  if(ADC > 500) PORTB = 1;
-
 
   if(!ADC_STATUS && !ready){
     sum+=ADC;
@@ -126,8 +122,8 @@ void ADC_config(){
   OCR0 = top;
 }
 
+
 void config(){
-  DDRB = 0x0F;
   sei();
   SET_PULL_UP_RESISTOR_ON_SDA_SCL;
   SET_SLAVE_ADRESS_7BIT(10);
@@ -142,8 +138,7 @@ void slave_handler( uint8_t VinPort, uint8_t slave_addr){
     ADCSRA |=(1<<ADEN);
     TWI_START;
   }
-  else if(slave){
-    
+  else if(slave){ 
     end_conn();
   } 
 }
@@ -153,7 +148,7 @@ void end_conn(){
   ready = 0;
   sendCount = 0;
   latestData = 0;
-  ADCSRA &=~(1<<ADEN);
+  ADCSRA &= ~(1<<ADEN);
   ADMUX &= 0xF0;
   TWI_STOP;
 }

@@ -23,7 +23,7 @@
 #define PORTCommand PORTD
 
 #define DDRData DDRB
-#define PORTData PORTB 
+#define PORTData PORTB
 
 //Disable RS/RW
 #define RS_RW_D_D \
@@ -143,6 +143,11 @@ void WRITE_NUMBER_noAddr(int Number){
 
 void WRITE_STRING_SINGLE(char charcter, uint8_t addr){
 	PORTData = (1<<DB7)|(addr);
+	PORTData = charcter;
+	PULS_CONTROL_ED();
+}
+
+void WRITE_STRING_SINGLE_noAddr(char charcter){
 	PORTData = charcter;
 	PULS_CONTROL_ED();
 }

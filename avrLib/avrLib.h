@@ -22,6 +22,12 @@
 #define SERVO_ANGLE_MOVE_STARTS_AT_ACLOCKWISE_90d(OCR1x, angle) OCR1x = 500-1 + (2000/180)*angle;
 #define SERVO_TURN_BASED_ON_ADC_RESULT(OCR1x, result) OCR1x = result + 500
 
+// servo continues
+#define SERVO_STOP(OCR1x) OCR1x = 1500 +1;
+#define SERVO_CCW(OCRx, speed) OCR1x = (1500 + 1) + speed;
+#define SERVO_CW(OCRx, speed) OCR1x = (1500 + 1) - speed;
+
+
 // 1
 int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint16_t bit_description){
     // side 127 tabell 54 for clock 2
@@ -243,6 +249,23 @@ uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A(uint8_t type_0_fast_1_phase_correct, uin
         ICR1 = TOP;
         SERVO_MIDDLE(OCR1A);
     }
+
+    return TOP;
+}
+
+uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A_SEVRO_CONTINUSE(){
+    uint32_t TOP = 0;
+    
+    TCCR1A |= (1<<WGM11);
+    TCCR1B |= (1<<WGM12) | (1<<WGM13);
+    TCCR1A |= (1<<COM1A1); TCCR1A &= ~(1<<COM1A0);
+    DDRD |= (1<<PD5);
+
+    Clock_Select_Description_for_a_Timer_Counter_n(1,1);
+    TOP = round((F_CPU/(1*50)) - 1);
+    ICR1 = TOP;
+    SERVO_STOP(OCR1A);
+
 
     return TOP;
 }

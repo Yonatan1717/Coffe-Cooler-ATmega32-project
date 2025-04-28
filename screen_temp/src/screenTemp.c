@@ -16,14 +16,14 @@ void ADC_config();
 
 
 ISR(ADC_vect) {
-  static uint8_t count = 0;
+  static uint16_t count = 0;
   static uint32_t sum = 0;
 
   sum += ADC;
   count++;
 
-  if (count >= 16) {
-    adc_resultat = sum / 16; // Gjennomsnitt
+  if (count >= 1000) {
+    adc_resultat = sum / 1000; // Gjennomsnitt
     count = 0;
     sum = 0;
     ready = 1;
@@ -40,14 +40,14 @@ int main(){
   USART_config();
   
 
-  INIT_LCD();
+  SETUP();
 	FUNCTION_SET();
 	DISPLAY_ON_OFF();
 	CLEAR_DISPLAY();
 	ENTRY_MODE();
 
   
-  WRITE_STRING("Booting up", 0x00);
+  WRITE_STRING("Booting up...", 0x00);
   _delay_ms(1000);
   CLEAR_DISPLAY();
   
@@ -56,7 +56,11 @@ int main(){
   while(1){
     if(ready){
       CLEAR_DISPLAY();
-      WRITE_NUMBER((adc_resultat), 0x00);
+      WRITE_STRING("Temp: ", 0x00);
+      WRITE_NUMBER_noAddr((adc_resultat*(5/10.24)));
+      WRITE_STRING_noAddr(" ");
+      WRITE_STRING_SINGLE_noAddr(0b11011111);
+      WRITE_STRING_noAddr("C");
       ready = 0;
       _delay_ms(200);
     }
@@ -70,7 +74,7 @@ void ADC_config(){
   sei();
   ADC_Noise_Reduse; // set ADC Noise Reduction
   ADC_Prescaler_Selections(32); // Select prescaler for ADC
-  ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
+  // ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
   ADCSRA |= (1<<ADEN) | (1<<ADIE) |(1<<ADSC);
 }
 

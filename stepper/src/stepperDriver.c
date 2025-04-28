@@ -56,7 +56,7 @@ ISR(TWI_vect){
     recivedCount = 0;
     recivedData = 500;
     ready = 0;
-    enLow; // for test
+    on = 0;
     dirLow; // for test
     stepLow; // for test
     TWI_return_to_not_addressed_slave();
@@ -66,19 +66,17 @@ ISR(TWI_vect){
   }
 }
 
-ISR(TIMER1_COMPA_vect){
+ISR(TIMER0_COMP_vect){
 
-  // PORTD ^= (1<<PD5)
   if(ready)
   {
-    if(recivedData >= 1000){
+    if(recivedData >= 800){
       stepperControlerPositiv(&on);
     }
     else if(recivedData <= 200){
       stepperControlerNegatives(&on);
     }
     else{
-      enLow;
       dirLow;
       stepLow;
     };
@@ -100,7 +98,7 @@ int main()
 
 
 void stepperControlerNegatives(volatile _Bool *on){ 
-  enHigh;
+  
   dirLow;
   if(!(*on)){
     stepHigh;
@@ -112,7 +110,6 @@ void stepperControlerNegatives(volatile _Bool *on){
 }
 
 void stepperControlerPositiv(volatile _Bool *on){ 
-  enHigh;
   dirHigh;
   if(!(*on)){
     stepHigh;
@@ -125,14 +122,16 @@ void stepperControlerPositiv(volatile _Bool *on){
 
 void Timer_config(){
   sei(); // set Globale Interrupt Enable
-  Clock_Select_Description_for_a_Timer_Counter_n2(1,1024); 
-  TCCR1B |= (1<<WGM12);
-  TIMSK |= (1<<OCIE1A);
-  uint16_t top = 500;
-  OCR1A = top;
+  Clock_Select_Description_for_a_Timer_Counter_n2(0,8);
+  PWM_CONFIG_TIMER_CLOCK_1_OCR1A_SEVRO_CONTINUSE(); 
+  TCCR0 |= (1<<WGM01);
+  TIMSK |= (1<<OCIE0);
+  uint16_t top = 5;
+  OCR0 = top;
 }
 
 void config(){
+  DDRB = 255;
   sei();
   SET_SLAVE_ADRESS_7BIT(18);
   TWCR = (1<<TWEA)|(1<<TWEN)|(1<<TWIE)|(1<<TWINT);

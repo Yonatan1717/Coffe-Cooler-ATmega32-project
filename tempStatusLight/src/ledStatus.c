@@ -15,14 +15,27 @@ void Timer_config();
 ISR(USART_RXC_vect){
   PORTB |= 1;
   recivedData = UDR;
-  OCR0 = 255-recivedData;
-  OCR2 = recivedData;
+  if(recivedData >= 255) {
+    OCR0 = 255-254;
+    OCR2 = 255;
+  }
+  else {
+    OCR0 = 255-recivedData;
+    OCR2 = recivedData;
+  }
 }
+
+ISR(INT0_vect) {  
+  if (debounce(&PIND, PD2)) { 
+    PORTB ^= (1<<PB0);
+  }  
+} 
 
 int main(){
   DDRB |= 1;
   USART_config();
   Timer_config();
+  interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
   while(1);
 }
 

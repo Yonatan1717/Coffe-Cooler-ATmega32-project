@@ -15,11 +15,9 @@ ISR(TWI_vect){
   switch (STATUS_CODE)
   {
   case 0x60:
-    PORTB = 1;
     TWI_SET_TWINT_ACK;
     break;
   case 0x80:
-    PORTB = 2;
     if (recivedCount == 0) {
       high_byte = TWI_recived_data(1);
       ++recivedCount;
@@ -33,8 +31,8 @@ ISR(TWI_vect){
     break;
   case 0xA0:
     PORTB ^= 1;
-    recivedCount = 0;
     recivedData = 0;
+    recivedCount = 0;
     ready = 0;
     TWI_return_to_not_addressed_slave();
     break;
@@ -57,8 +55,6 @@ void config(){
 
 int main(){
   config();
-  
   PWM_CONFIG_TIMER_CLOCK_1_OCR1A(0,50,1);
-
   while(1);
  }
