@@ -195,3 +195,36 @@ uint8_t TWI_recive_data_close(uint8_t dest_slave_addr_7bit){
 
     return recivedData;
 }
+
+void TWI_send_continues_2byte_data(volatile uint8_t slave, volatile uint16_t latestData,volatile uint8_t *sendCount, volatile _Bool *readyFlag) {
+    switch (STATUS_CODE)
+    {
+        case 0x08:
+        TWI_send_sla_w_or_r('w',slave);
+        break;
+    case 0x18:
+        if(*sendCount == 0){
+            TWI_send_data((latestData>>8),0);
+            ++(*sendCount);
+        } 
+        else if(*sendCount == 1){
+            TWI_send_data((latestData & 0x00FF),0);
+            *sendCount = 0;
+            *readyFlag = 0; 
+        } 
+        break;
+    case 0x28:
+        if(*sendCount == 0){
+            TWI_send_data((latestData>>8),0);
+            ++(*sendCount);
+        } 
+        else if(*sendCount == 1){
+            TWI_send_data((latestData & 0x00FF),0);
+            *sendCount = 0;
+            *readyFlag = 0; 
+        }
+        break;
+    default:
+        break;
+    }
+}

@@ -22,7 +22,7 @@
 
 
 volatile _Bool on = 0;
-volatile _Bool ready = 0;
+volatile _Bool readyFlag = 0;
 const uint16_t servoSpeed = 50;
 volatile uint8_t recivedCount = 0;
 volatile uint16_t recivedData = 500;
@@ -51,13 +51,13 @@ ISR(TWI_vect){
       low_byte = TWI_recived_data(1);
       recivedData = ((uint16_t) high_byte << 8) | low_byte;
       recivedCount = 0;
-      ready = 1;
+      readyFlag = 1;
     }
     break;
   case 0xA0:
     recivedCount = 0;
     recivedData = 500;
-    ready = 0;
+    readyFlag = 0;
     on = 0;
     dirLow; // for test
     stepLow; // for test
@@ -70,7 +70,7 @@ ISR(TWI_vect){
 
 ISR(TIMER0_COMP_vect){
 
-  if(ready)
+  if(readyFlag)
   {
     if(recivedData >= 800){
       STP_control_positiv(&on);
@@ -86,7 +86,7 @@ ISR(TIMER0_COMP_vect){
       stepLow;
     };
     
-    ready = 0;
+    readyFlag = 0;
   }
   
 }

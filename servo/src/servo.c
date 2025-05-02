@@ -6,7 +6,7 @@
 #include <I2C.h>
 volatile uint16_t recivedData = 0;
 volatile uint8_t recivedCount = 0;
-volatile _Bool ready = 0;
+volatile _Bool readyFlag = 0;
 
 
 ISR(TWI_vect){
@@ -26,23 +26,23 @@ ISR(TWI_vect){
       low_byte = TWI_recived_data(1);
       recivedData = ((uint16_t)high_byte << 8) | low_byte;
       recivedCount = 0;
-      ready = 1;
+      readyFlag = 1;
     }
     break;
   case 0xA0:
     PORTB ^= 1;
     recivedData = 0;
     recivedCount = 0;
-    ready = 0;
+    readyFlag = 0;
     TWI_return_to_not_addressed_slave();
     break;
   default:
     break;
   }
 
-  if(ready){
+  if(readyFlag){
     SERVO_TURN_BASED_ON_ADC_RESULT(OCR1A,recivedData*2);
-    ready = 0;
+    readyFlag = 0;
   }
 }
 

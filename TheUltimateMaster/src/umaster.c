@@ -7,91 +7,63 @@
 #include <ADC.h>
 #include <math.h>
 
+// constants 
 #define ADC_SAMPLE_SIZE  16
+#define SERVO_SLAVE_ADDRESS 50
+#define STEPPER_SLAVE_ADDRESS 18
+#define SERVO 0
+#define STEPPER 1
+
+// TWI communication
 volatile uint8_t slave = 0;
-volatile uint16_t latestData = 0;
+volatile _Bool readyFlag = 0;
 volatile uint8_t sendCount = 0;
-volatile _Bool ready = 0;
-volatile uint8_t buttonNum = 0;
-volatile uint16_t adcBuffer[ADC_SAMPLE_SIZE];
-volatile uint8_t adcBuffer_index = 0;
+volatile uint8_t buttonName = 0;
+volatile uint16_t latestData = 0;
+
+// Simple moving average
 volatile uint32_t adcAvg = 0;
+volatile uint8_t adcBuffer_index = 0;
+volatile uint16_t adcBuffer[ADC_SAMPLE_SIZE];
 
-
-void ADC_config();
-void slave_handler(uint8_t VinPort, uint8_t slave_addr);
+// functions used in this AVR C code
+void config();
 void end_conn();
-void DB_config_timer();
+void ADC_config();
 void SMA_update(); 
-  
+void DB_config_timer();
+void communication_manager(volatile uint8_t buttonName);
+void slave_handler(uint8_t VinPort, uint8_t slave_addr);
+
+
+/////////////////////////// INTERRUPTS  start /////////////////////////
+
 ISR(INT0_vect) {
-  buttonNum = 0;  
+  buttonName = SERVO;  
   DB_start_timer(2, 1024); 
 } 
 
 ISR(INT1_vect) { 
-  buttonNum = 1;
+  buttonName = STEPPER;
   DB_start_timer(2,1024); 
 }  
 
 ISR(TIMER2_COMP_vect) {
-  switch (buttonNum)
-  {
-    case 0:
-      slave_handler(0,50);
-      break;
-    case 1:
-      slave_handler(1,18);
-      break;
-    default:
-      break;
-  }
+  communication_manager(buttonName);
   DB_stop_timer(2);
 }
 
-
 ISR(TWI_vect){
-  switch (STATUS_CODE)
-  {
-  case 0x08:
-    TWI_send_sla_w_or_r('w',slave);
-    break;
-  case 0x18:
-    if(sendCount == 0){
-      TWI_send_data((latestData>>8),0);
-      ++sendCount;
-    } 
-    else if(sendCount == 1){
-      TWI_send_data((latestData & 0x00FF),0);
-      sendCount = 0;
-      ready = 0; 
-    } 
-    break;
-  case 0x28:
-    if(sendCount == 0){
-      TWI_send_data((latestData>>8),0);
-      ++sendCount;
-    } 
-    else if(sendCount == 1){
-      TWI_send_data((latestData & 0x00FF),0);
-      sendCount = 0;
-      ready = 0; 
-    }
-    break;
-  default:
-    break;
-  }
+  TWI_send_continues_2byte_data(slave, latestData,&sendCount, &readyFlag);
 }
 
 ISR(TIMER0_COMP_vect){
-  if(!ADC_STATUS && !ready){
+  if(!ADC_STATUS && !readyFlag){
     SMA_update(ADC);
   }
 }
 
-void config();
-
-
+/////////////////////////// main() start/////////////////////////
 
 int main(){
   DDRB |= (1<<PB2) |(1<<PB0) |(1<<PB1); 
@@ -103,8 +75,7 @@ int main(){
   while(1);
 }
 
-
-
+/////////////////////////// FUNCTION start /////////////////////////
 
 void ADC_config(){
   sei(); // set Globale Interrupt Enable
@@ -128,6 +99,24 @@ void config(){
   TWI_BIT_RATE_PRESCALER_1;
 }
 
+void communication_manager(volatile uint8_t buttonName) {
+  switch (buttonName)
+  {
+    case 0:
+      if((PIND & (1<<PD2)) == 0) {
+        slave_handler(0, SERVO_SLAVE_ADDRESS);
+      }
+      break;
+    case 1:
+      if((PIND & (1<<PD3)) == 0) {
+        slave_handler(1, STEPPER_SLAVE_ADDRESS);
+      }
+      break;
+    default:
+      break;
+  }
+}
+
 void slave_handler( uint8_t VinPort, uint8_t slave_addr){
   if(!slave){ 
     slave = slave_addr;
@@ -144,7 +133,7 @@ void slave_handler( uint8_t VinPort, uint8_t slave_addr){
 
 void end_conn(){
   slave = 0;
-  ready = 0;
+  readyFlag = 0;
   sendCount = 0;
   latestData = 0;
   ADCSRA &= ~(1<<ADEN);
@@ -167,4 +156,5 @@ void SMA_update(uint16_t newADC) {
   latestData = adcAvg/ADC_SAMPLE_SIZE;
 
   adcBuffer_index = (adcBuffer_index + 1) % ADC_SAMPLE_SIZE;
+  readyFlag = 1;
 }
