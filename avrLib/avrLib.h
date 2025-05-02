@@ -6,7 +6,6 @@
 #include <util/delay.h>
 
 
-
 // nyttige macros //
 #define ACTIVATE_OUTPUT_PORTS_m(DDRx, DDxn_liste) ACTIVATE_OUTPUT_PORTS(&DDRx, DDxn_liste)
 #define SET_PORTS_m(PORTx, Pxn_list) ACTIVATE_OUTPUT_PORTS(&PORTx, Pxn_list)
@@ -15,21 +14,22 @@
 #define TOGGLE_PORT(PORTx, Pxn) PORTx ^= (1<<Pxn)
 
 
-// servo
+// servo //
 #define SERVO_MIDDLE(OCR1x) OCR1x = 1500 - 1
 #define SERVO_R_90d_CLOCKWISE_FROM_MIDDLE(OCR1x) OCR1x = 500 - 1 
 #define SERVO_R_90d_ANTI_CLOCKWISE_FROM_MIDDLE(OCR1x) OCR1x = 2500 - 1
-#define SERVO_ANGLE_MOVE_STARTS_AT_ACLOCKWISE_90d(OCR1x, angle) OCR1x = 500-1 + (2000/180)*angle;
-#define SERVO_TURN_BASED_ON_ADC_RESULT(OCR1x, result) OCR1x = result + 500
+#define SERVO_ANGLE_MOVE_STARTS_AT_ACLOCKWISE_90d(OCR1x, angle) OCR1x = 500-1 + (2000/180)*(angle)
+#define SERVO_TURN_BASED_ON_ADC_RESULT(OCR1x, result) OCR1x = (result) + 500
 
-// servo continues
-#define SERVO_STOP(OCR1x) OCR1x = 1500 +1;
-#define SERVO_CCW(OCRx, speed) OCR1x = (1500 + 1) + speed;
-#define SERVO_CW(OCRx, speed) OCR1x = (1500 + 1) - speed;
+// servo continues // 
+const uint16_t servorStop = 1437;
+#define SERVO_STOP(OCR1x) OCR1x = servorStop
+#define SERVO_CCW(OCR1x, speed) OCR1x = (servorStop) + (speed)
+#define SERVO_CW(OCR1x, speed) OCR1x = (servorStop) - (speed)
 
 
 // 1
-int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint16_t bit_description){
+int TIMER_perscalar_selct(uint8_t timer_clock_num, uint16_t bit_description){
     // side 127 tabell 54 for clock 2
     // side 110 tabell 48 for clock 1
     // side 82 tabell 42 for clock 0
@@ -37,11 +37,20 @@ int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint
     // exit status code 1: ugyldig timer/clock Number
     // exit status code 2: ugyldig bit description
     if(timer_clock_num > 2){
-        exit(1);
+        return 11;
     }
 
     switch (bit_description)
     {
+        case 0:
+            if(timer_clock_num == 0){
+                TCCR0 &= ~((1<<CS00) | (1<<CS01) | (1<<CS02));
+            }else if(timer_clock_num == 1){
+                TCCR1B &= ~((1<<CS10) | (1<<CS11) | (1<<CS12));
+            }else if(timer_clock_num == 2){
+                TCCR2 &= ~((1<<CS20) | (1<<CS21) | (1<<CS22));
+            }
+            break;
         case 1:
             if(timer_clock_num == 0){
                 TCCR0 |= (1<<CS00);
@@ -88,155 +97,86 @@ int Clock_Select_Description_for_a_Timer_Counter_n(uint8_t timer_clock_num, uint
             }
             break;
         default:
-            exit(2);
+            return 12;
     }
 
     return bit_description;
 }
 
-void Clock_Select_Description_for_a_Timer_Counter_n2(uint8_t timer_clock_num, uint16_t bit_description){
-    // side 127 tabell 54 for clock 2
-    // side 110 tabell 48 for clock 1
-    // side 82 tabell 42 for clock 0
 
-    // exit status code 1: ugyldig timer/clock Number
-    // exit status code 2: ugyldig bit description
-    if(timer_clock_num > 2){
-        exit(1);
-    }
-
-    switch (bit_description)
-    {
-        case 1:
-            if(timer_clock_num == 0){
-                TCCR0 |= (1<<CS00);
-            }else if(timer_clock_num == 1){
-                TCCR1B |= (1<<CS10);
-            }else if(timer_clock_num == 2){
-                TCCR2 |= (1<<CS20);
-            }
-            break;
-        case 8:
-            if(timer_clock_num == 0){
-                TCCR0 |= (1<<CS01);
-            }else if(timer_clock_num == 1){
-                TCCR1B |= (1<<CS11);
-            }else if(timer_clock_num == 2){
-                TCCR2 |= (1<<CS21);
-            }
-            break;
-        case 64:
-            if(timer_clock_num == 0){
-                TCCR0 |= (1<<CS01) |(1<<CS00);
-            }else if(timer_clock_num == 1){
-                TCCR1B |= (1<<CS10) | (1<< CS11);
-            }else if(timer_clock_num == 2){
-                TCCR2 |= (1<<CS22);
-            }
-            break;
-        case 256:
-            if(timer_clock_num == 0){
-                TCCR0 |= (1<<CS02);
-            }else if(timer_clock_num == 1){
-                TCCR1B |= (1<<CS12);
-            }else if(timer_clock_num == 2){
-                TCCR2 |= (1<<CS22) | (1<<CS21);
-            }
-            break;
-        case 1024:
-            if(timer_clock_num == 0){
-                TCCR0 |= (1<<CS00) | (1<<CS02);
-            }else if(timer_clock_num == 1){
-                TCCR1B |= (1<<CS10) | (1<<CS12);
-            }else if(timer_clock_num == 2){
-                TCCR2 |= (1<<CS20) | (1<<CS21) | (1<<CS22);
-            }
-            break;
-        default:
-            exit(2);
-    }
-}
+///////////////////// debounce ////////////////////////
 
 // 2
-void ACTIVATE_OUTPUT_PORTS(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. DDRC, DDC0, DDC3, DDC5
+void DB_start_timer(uint8_t timer_clock_num, uint16_t prescaler) {
+    switch (timer_clock_num)
+    {
+    case 0:
+        TCNT0 = 0;
+        break; 
+    case 1:
+        TCNT1 = 0;
+        break;
+    case 2:
+        TCNT2 = 0;
+        break;
+    default:
+        break;
+    }
+    TIMER_perscalar_selct(timer_clock_num, prescaler);
+}
+// 3
+void DB_stop_timer(uint8_t timer_clock_num) {
+    TIMER_perscalar_selct(timer_clock_num, 0);
+}
+
+
+///////////////////// port activation ////////////////////////
+
+// 4
+void ACTIVATE_output_ports(volatile uint8_t *DDRx_Register, uint8_t *DDxn){ //E.g. DDRC, DDC0, DDC3, DDC5
     for(uint8_t i = 0; (DDxn[i] != 0 || i == 0) && i<8; i++){
         *DDRx_Register |= (1<<DDxn[i]);
     }
 }
-
-// 3
-void SET_PORTS(volatile uint8_t *PORTx_Register, uint8_t *Pxn){ //E.g. DDRC, DDC0, DDC3, DDC5
+// 5
+void SET_ports(volatile uint8_t *PORTx_Register, uint8_t *Pxn){ //E.g. DDRC, DDC0, DDC3, DDC5
     for(uint8_t i = 0; (Pxn[i] != 0 || i == 0) && i<8; i++){
         *PORTx_Register |= (1<<Pxn[i]);
     }
 }
 
-// 4
-void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {
+
+///////////////////// external interrupts ////////////////////////
+
+// 6
+void INT0_config_falling() {
     sei();  
   // configuration for the interrupt  
   GICR |= (1 << INT0); // external interrupt request 0 enabled (INT0, not INT1)  
-  MCUCR |= (1 << ISC00);   // ISC01 = 1
-  MCUCR &= ~(1 << ISC01);  // ISC00 = 0
+  MCUCR &= ~(1 << ISC00);   // ISC00 = 1
+  MCUCR |= (1 << ISC01);  // ISC01 = 1
 
   DDRD &= ~(1 << PD2); // Set PD2 as input  
   PORTD |= (1 << PD2);  // Enable pull-up resistor on PD2  
 } 
 
-// 5
-void interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE() { 
+// 7
+void INT1_config_falling() { 
     sei(); 
     // configuration for the interrupt  
     GICR |= (1 << INT1); // external interrupt request 0 enabled (INT0, not INT1)  
-    MCUCR |= (1 << ISC10);   
-    MCUCR &= ~(1 << ISC11); 
+    MCUCR &= ~(1 << ISC10);   // ISC10 = 1
+    MCUCR |= (1 << ISC11); // ISC11 = 1
   
     DDRD &= ~(1 << PD3); // Set PD2 as input  
     PORTD |= (1 << PD3);  // Enable pull-up resistor on PD2  
-  }
-
-//  void interruptConfig_INT2_FULLY_READY_LOGICAL_CHANGE() { 
-//     sei(); 
-//     // configuration for the interrupt  
-//     GICR |= (1 << INT2); // external interrupt request 0 enabled (INT0, not INT1)  
-//     MCUCR |= (1 << ISC10); // set ISC10 as one so that any logical change on INT0 generates an interrupt request  
-//     MCUCR &= ~(1 << ISC11); //clear ISC01 to make it a low level interrupt  
-
-//     DDRD &= ~(1 << PD3); // Set PD2 as input  
-//     PORTD |= (1 << PD3);  // Enable pull-up resistor on PD2  
-//   }
-
-////////////////////// debounce /////////////////////////////
-// 6
-uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {  
-    static uint8_t buttonPressed = 1;  
-    if ((pin_port & (1 << bitPosition)) == 0) {  
-      if (buttonPressed == 1) {  
-        buttonPressed = 0;  
-        return 1;  
-      }  
-    } else {  
-      buttonPressed = 1;  
-    }  
-    return 0;  
-  }  
-
-// 7
-uint8_t debounce(volatile uint8_t *pin_port, uint8_t bitPosition) {  
-// debounce function that takes in volatile variable uint8 pointer pin_port and integer bitPosition  
-if (pressed(*pin_port, bitPosition)) {  
-    _delay_ms(20);
-    if ((*pin_port & (1 << bitPosition)) == 0) {  
-    return 1;  
-    }  
-}  
-return 0;  
-}  
+}
 
 
 ///////////////////// for servo motor ////////////////////////
-// 8
-uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A(uint8_t type_0_fast_1_phase_correct, uint16_t frequency, uint16_t prescaler){
+
+// 9
+uint32_t SERVO_config_timer1_nc(uint8_t type_0_fast_1_phase_correct, uint16_t frequency, uint16_t prescaler){
     uint32_t TOP = 0;
     if(!type_0_fast_1_phase_correct){
         TCCR1A |= (1<<WGM11);
@@ -244,7 +184,7 @@ uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A(uint8_t type_0_fast_1_phase_correct, uin
         TCCR1A |= (1<<COM1A1); TCCR1A &= ~(1<<COM1A0);
         DDRD |= (1<<PD5);
     
-        Clock_Select_Description_for_a_Timer_Counter_n(1,1);
+        TIMER_perscalar_selct(1,1);
         TOP = round((F_CPU/(prescaler*frequency)) - 1);
         ICR1 = TOP;
         SERVO_MIDDLE(OCR1A);
@@ -253,7 +193,8 @@ uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A(uint8_t type_0_fast_1_phase_correct, uin
     return TOP;
 }
 
-uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A_SEVRO_CONTINUSE(){
+// 10
+uint32_t SERVO_config_timer1_c(){
     uint32_t TOP = 0;
     
     TCCR1A |= (1<<WGM11);
@@ -261,7 +202,7 @@ uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A_SEVRO_CONTINUSE(){
     TCCR1A |= (1<<COM1A1); TCCR1A &= ~(1<<COM1A0);
     DDRD |= (1<<PD5);
 
-    Clock_Select_Description_for_a_Timer_Counter_n(1,1);
+    TIMER_perscalar_selct(1,1);
     TOP = round((F_CPU/(1*50)) - 1);
     ICR1 = TOP;
     SERVO_STOP(OCR1A);
@@ -269,9 +210,6 @@ uint32_t PWM_CONFIG_TIMER_CLOCK_1_OCR1A_SEVRO_CONTINUSE(){
 
     return TOP;
 }
-
-
-
 
 
 

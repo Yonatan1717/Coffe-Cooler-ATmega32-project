@@ -55,6 +55,6 @@ void config(){
 
 int main(){
   config();
-  PWM_CONFIG_TIMER_CLOCK_1_OCR1A(0,50,1);
+  SERVO_config_timer1_nc(0,50,1);
   while(1);
  }

@@ -7,33 +7,47 @@
 #include <ADC.h>
 #include <math.h>
 
+#define ADC_SAMPLE_SIZE  16
 volatile uint8_t slave = 0;
 volatile uint16_t latestData = 0;
 volatile uint8_t sendCount = 0;
 volatile _Bool ready = 0;
+volatile uint8_t buttonNum = 0;
+volatile uint16_t adcBuffer[ADC_SAMPLE_SIZE];
+volatile uint8_t adcBuffer_index = 0;
+volatile uint32_t adcAvg = 0;
 
 
 void ADC_config();
 void slave_handler(uint8_t VinPort, uint8_t slave_addr);
 void end_conn();
-
-ISR(INT2_vect){
-  if(debounce(&PINB,PB2)){
-    end_conn();
-  }
-}
+void DB_config_timer();
+void SMA_update(); 
   
-ISR(INT0_vect) {  
-  if (debounce(&PIND, PD2)) { 
-    slave_handler(0,50);
-  }  
+ISR(INT0_vect) {
+  buttonNum = 0;  
+  DB_start_timer(2, 1024); 
 } 
 
-ISR(INT1_vect) {  
-  if (debounce(&PIND, PD3)) { 
-    slave_handler(1,18);
-  }
+ISR(INT1_vect) { 
+  buttonNum = 1;
+  DB_start_timer(2,1024); 
 }  
+
+ISR(TIMER2_COMP_vect) {
+  switch (buttonNum)
+  {
+    case 0:
+      slave_handler(0,50);
+      break;
+    case 1:
+      slave_handler(1,18);
+      break;
+    default:
+      break;
+  }
+  DB_stop_timer(2);
+}
 
 
 ISR(TWI_vect){
@@ -70,20 +84,8 @@ ISR(TWI_vect){
 }
 
 ISR(TIMER0_COMP_vect){
-  static uint8_t counter = 0;
-  static uint32_t sum = 0;
-
   if(!ADC_STATUS && !ready){
-    sum+=ADC;
-    ++counter;
-  
-    if(counter >= 16){
-      latestData = (uint16_t) (sum / 16);
-      counter = 0;
-      sum = 0;
-      ready = 1;
-    }
-    ADCSRA |= (1<<ADSC);
+    SMA_update(ADC);
   }
 }
 
@@ -95,8 +97,9 @@ int main(){
   DDRB |= (1<<PB2) |(1<<PB0) |(1<<PB1); 
   config(); 
   ADC_config();
-  interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
-  interruptConfig_INT1_FULLY_READY_LOGICAL_CHANGE();
+  DB_config_timer();
+  INT0_config_falling();
+  INT1_config_falling();
   while(1);
 }
 
@@ -104,15 +107,10 @@ int main(){
 
 
 void ADC_config(){
-
   sei(); // set Globale Interrupt Enable
-  Clock_Select_Description_for_a_Timer_Counter_n2(0,1024); /* 
-  select desired prescaler for desired Timer/Counter_n we will be using Timer/Counter0 with 
-  bit despcription 1024*/
-
   ADC_Noise_Reduse; // set ADC Noise Reduction
   ADC_Prescaler_Selections(16); // Select prescaler for ADC
-  ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
+  // ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
   ADCSRA |= (1<<ADEN) |(1<<ADSC);
 
   TCCR0 |= (1<<WGM01);
@@ -135,6 +133,7 @@ void slave_handler( uint8_t VinPort, uint8_t slave_addr){
     slave = slave_addr;
     PORTB ^= (1<<PB0);
     ADMUX = (ADMUX & 0xF0) | (VinPort & 0x0F);
+    TIMER_perscalar_selct(0,1024); // turn on timer/clock 0 when needed 
     ADCSRA |=(1<<ADEN);
     TWI_START;
   }
@@ -150,5 +149,22 @@ void end_conn(){
   latestData = 0;
   ADCSRA &= ~(1<<ADEN);
   ADMUX &= 0xF0;
+  TIMER_perscalar_selct(0,0); // turns off timer/clock 0 when not needed 
   TWI_STOP;
+}
+
+void DB_config_timer(){
+  TCCR2 |= (1<<WGM21);
+  TIMSK |= (1<<OCIE2);
+  OCR2 = (uint8_t) 5;
+}
+
+void SMA_update(uint16_t newADC) {
+  uint16_t oldADC = adcBuffer[adcBuffer_index];
+  adcBuffer[adcBuffer_index] = newADC;
+
+  adcAvg = adcAvg + newADC-oldADC;
+  latestData = adcAvg/ADC_SAMPLE_SIZE;
+
+  adcBuffer_index = (adcBuffer_index + 1) % ADC_SAMPLE_SIZE;
 }

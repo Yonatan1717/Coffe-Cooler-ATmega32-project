@@ -93,7 +93,7 @@ void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile ui
             *PORT_NAME = (1<<PORT_NAMES[4]);
             break;
         default:
-            ACTIVATE_OUTPUT_PORTS(PORT_NAME,PORT_NAMES);
+            ACTIVATE_output_ports(PORT_NAME,PORT_NAMES);
             break;
         }
 }

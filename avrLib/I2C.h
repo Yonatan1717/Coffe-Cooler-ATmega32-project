@@ -90,10 +90,8 @@ void TWI_return_to_not_addressed_slave(){
     TWI_SET_TWINT_ACK;
 }
 
-
-
 // main function
-uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
+uint8_t TWI_request_respons_close_11_status(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
     uint8_t recived_data = 0;
     static uint8_t send_error_count = 0;
 
@@ -157,21 +155,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
     return recived_data;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
+uint8_t TWI_recive_data_close(uint8_t dest_slave_addr_7bit){
     uint8_t recivedData = 0;
     switch (STATUS_CODE)
     {

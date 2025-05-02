@@ -20,15 +20,17 @@
 #define enLow stepperDriverPORT &= ~(1<<en)
 #define stepLow stepperDriverPORT &= ~(1<<step)
 
-volatile _Bool on = 0;
-volatile uint16_t recivedData = 500;
-volatile uint8_t recivedCount = 0;
-volatile _Bool ready = 0;
 
-void stepperControlerNegatives(volatile _Bool *on);
+volatile _Bool on = 0;
+volatile _Bool ready = 0;
+const uint16_t servoSpeed = 50;
+volatile uint8_t recivedCount = 0;
+volatile uint16_t recivedData = 500;
+
 void config();
-void stepperControlerPositiv(volatile _Bool *on);
-void Timer_config();
+void TIMER_config();
+void STP_control_negativ(volatile _Bool *on);
+void STP_control_positiv(volatile _Bool *on);
 
 
 
@@ -47,7 +49,7 @@ ISR(TWI_vect){
     }
     else if (recivedCount == 1) {
       low_byte = TWI_recived_data(1);
-      recivedData = ((uint16_t)high_byte << 8) | low_byte;
+      recivedData = ((uint16_t) high_byte << 8) | low_byte;
       recivedCount = 0;
       ready = 1;
     }
@@ -71,12 +73,15 @@ ISR(TIMER0_COMP_vect){
   if(ready)
   {
     if(recivedData >= 800){
-      stepperControlerPositiv(&on);
+      STP_control_positiv(&on);
+      SERVO_CCW(OCR1A,26+servoSpeed);
     }
     else if(recivedData <= 200){
-      stepperControlerNegatives(&on);
+      STP_control_negativ(&on);
+      SERVO_CW(OCR1A, 26+servoSpeed);
     }
     else{
+      SERVO_STOP(OCR1A);
       dirLow;
       stepLow;
     };
@@ -91,13 +96,13 @@ int main()
 {
   stepperDriverDDRx |= (1<<dir) | (1<<en) | (1<<step); 
   config();
-  Timer_config();
+  TIMER_config();
   while(1);
 }
 
 
 
-void stepperControlerNegatives(volatile _Bool *on){ 
+void STP_control_negativ(volatile _Bool *on){ 
   
   dirLow;
   if(!(*on)){
@@ -109,7 +114,7 @@ void stepperControlerNegatives(volatile _Bool *on){
   }
 }
 
-void stepperControlerPositiv(volatile _Bool *on){ 
+void STP_control_positiv(volatile _Bool *on){ 
   dirHigh;
   if(!(*on)){
     stepHigh;
@@ -120,10 +125,10 @@ void stepperControlerPositiv(volatile _Bool *on){
   }
 }
 
-void Timer_config(){
+void TIMER_config(){
   sei(); // set Globale Interrupt Enable
-  Clock_Select_Description_for_a_Timer_Counter_n2(0,8);
-  PWM_CONFIG_TIMER_CLOCK_1_OCR1A_SEVRO_CONTINUSE(); 
+  TIMER_perscalar_selct(0,8);
+  SERVO_config_timer1_c(); 
   TCCR0 |= (1<<WGM01);
   TIMSK |= (1<<OCIE0);
   uint16_t top = 5;

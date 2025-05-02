@@ -10,7 +10,7 @@
 
 volatile uint8_t recivedData = 0;
 
-void Timer_config();
+void TIMER_config();
 
 ISR(USART_RXC_vect){
   PORTB |= 1;
@@ -34,15 +34,15 @@ ISR(INT0_vect) {
 int main(){
   DDRB |= 1;
   USART_config();
-  Timer_config();
+  TIMER_config();
   interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
   while(1);
 }
 
-void Timer_config(){
+void TIMER_config(){
   // TCCR1A |= (1<<WGM11) | (1<<COM1A1);
   // TCCR1B |= (1<<WGM12) | (1<<WGM13); 
-  // Clock_Select_Description_for_a_Timer_Counter_n(1,64);
+  // TIMER_perscalar_selct(1,64);
   // ICR1 = (uint8_t) 255;
   // uint8_t Top = 50;
   // OCR1A = Top;
@@ -50,14 +50,14 @@ void Timer_config(){
 
   TCCR0 |= (1<<WGM01) | (1<<WGM00);
   TCCR0 |= (1<<COM01);
-  Clock_Select_Description_for_a_Timer_Counter_n(0,64);
+  TIMER_perscalar_selct(0,64);
   uint8_t Top= 50;
   OCR0 = Top;
   DDRB |= (1<<PB3);
 
   TCCR2 |= (1<<WGM21) | (1<<WGM20);
   TCCR2 |= (1<<COM21);
-  Clock_Select_Description_for_a_Timer_Counter_n(2,64);
+  TIMER_perscalar_selct(2,64);
   uint8_t Top2= 50;
   OCR2 = Top2;
   DDRD |= (1<<PB7);

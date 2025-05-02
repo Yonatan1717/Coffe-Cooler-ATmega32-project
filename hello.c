@@ -161,9 +161,14 @@ void ACTIVATE_REGISTERS(unsigned char *DDRx_Register, unsigned char DDxn[]){ //E
 
 int main(){
 
-    char *helllo = "hello0000";
+    // char *helllo = "hello0000";
 
-    printf("%i", sizeof(helllo)-1);
+    // printf("%i", sizeof(helllo)-1);
+    int check = 0;
+    check = !check;
+    printf("%i           ", check);
+    check = !check;
+    printf("%i", check);
 
     return 0;
 }
