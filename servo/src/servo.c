@@ -7,9 +7,12 @@
 
 volatile uint16_t recivedData = 0;
 volatile _Bool readyFlag = 0;
+volatile _Bool isReciving = 0;
 
 
 ISR(TWI_vect){
+  if(STATUS_CODE == 0x60) isReciving = 1;
+  if(STATUS_CODE == 0xA0) isReciving = 0;
   TWI_recive_continues_2byte_data_slave(&recivedData, 0, &readyFlag);
 
   if(readyFlag){
@@ -28,5 +31,7 @@ void config(){
 int main(){
   config();
   SERVO_config_timer1_nc(0,50,1);
-  while(1);
+  while(1) {
+    if(!isReciving) SLEEP_enter_power_down();
+  };
  }

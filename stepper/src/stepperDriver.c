@@ -39,10 +39,12 @@ void STP_control_positiv(volatile _Bool *on);
 
 ISR(TWI_vect) {
   if (STATUS_CODE == 0x60) {
+    PORTB ^= (1<<3);
     enterSleepMode = 0; // wake up 
     TIMER_perscalar_selct(2, 8); // Start Timer2
   }
   else if (STATUS_CODE == 0xA0) {
+    PORTB ^= (1<<3);
     enterSleepMode = 1; // sleep
     TIMER_perscalar_selct(2, 0); // Stopp Timer2
   }
@@ -72,9 +74,7 @@ int main()
 }
 
 
-
 void STP_control_negativ(volatile _Bool *on){ 
-  
   dirLow;
   if(!(*on)){
     stepHigh;
@@ -105,12 +105,12 @@ void TIMER_config(){
   OCR2 = top;
 }
 
-      void config(){
-        DDRB = 255;
-        sei();
-        SET_SLAVE_ADRESS_7BIT(18);
-        TWCR = (1<<TWEA)|(1<<TWEN)|(1<<TWIE)|(1<<TWINT);
-      }
+void config(){
+  DDRB = 255;
+  sei();
+  SET_SLAVE_ADRESS_7BIT(18);
+  TWCR = (1<<TWEA)|(1<<TWEN)|(1<<TWIE)|(1<<TWINT);
+}
 
 void STP_handle_data() {
   if(recivedData >= 800) {

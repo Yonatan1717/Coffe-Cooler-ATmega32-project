@@ -14,7 +14,7 @@
 #define STEPPER 1
 #define DB_TIMER_NUM 2
 #define SERVO_ADC_PIN 0
-#define ADC_TIMER_TOP 200
+#define ADC_TIMER_TOP 4
 #define DB_PRESCALAR 1024
 #define STEPPER_ADC_PIN 1
 #define ADC_SAMPLE_SIZE  16
@@ -23,7 +23,7 @@
 
 
 // Sleep status
-volatile _Bool sleepStatusAdc = 1;
+volatile _Bool sleepStatusAdc = 0;
 
 // TWI communication
 volatile uint8_t slave = 0;
@@ -41,6 +41,7 @@ volatile uint16_t adcBuffer[ADC_SAMPLE_SIZE];
 #endif
 
 // functions used in this AVR C code
+void setup();
 void config();
 void end_conn();
 void ADC_config();
@@ -52,22 +53,26 @@ void slave_handler(volatile uint8_t VinPort, volatile uint8_t slave_addr);
 
 /////////////////////////// INTERRUPTS  start /////////////////////////
 
+// ISR(INT2_vect) {
+//   sleepStatusAdc = 1;
+//   buttonName = STOP;  
+//   DB_start_timer(DB_TIMER_NUM, DB_PRESCALAR); 
+// } 
+
 // Exteral interrupt 
 ISR(INT0_vect) {
-  sleepStatusAdc = 0;
+  sleepStatusAdc = 1;
   buttonName = SERVO;  
   DB_start_timer(DB_TIMER_NUM, DB_PRESCALAR); 
 } 
 
-ISR(INT1_vect) { 
+ISR(INT1_vect) {
+  sleepStatusAdc = 1; 
   buttonName = STEPPER;
   DB_start_timer(DB_TIMER_NUM, DB_PRESCALAR); 
 }  
 
-ISR(INT2_vect) {
-  buttonName = STOP;  
-  DB_start_timer(DB_TIMER_NUM, DB_PRESCALAR); 
-} 
+
 
 // TWI interrupt
 ISR(TWI_vect){ 
@@ -96,20 +101,15 @@ ISR(TIMER0_COMP_vect){ // for adc convertion start
 /////////////////////////// main() start/////////////////////////
 
 int main(){
-  config(); 
-  ADC_config();
-  DB_config_timer2();
-  INT0_config_falling();
-  INT1_config_falling();
-  INT2_config_falling();
-  DDRB |= (1<<PB2) |(1<<PB0) |(1<<PB1); 
-
+  setup();
+  INT0_config_onlow();
+  INT1_config_onlow();
+  // INT2_config_onlow();
   while(1) {
-    if(sleepStatusAdc) {
-      SLEEP_enter_power_down();
-    } 
-    // else {
+    // if(sleepStatusAdc) {
     //   SLEEP_enter_adc();
+    // } else {
+    //   SLEEP_enter_power_down();
     // }
   };
 }
@@ -118,6 +118,13 @@ int main(){
 
 /////////////////////////// FUNCTION start /////////////////////////
 
+
+void setup() {
+  config(); 
+  ADC_config();
+  DB_config_timer2();
+  DDRB |= (1<<PB2) |(1<<PB0) |(1<<PB1); 
+}
 
 // configs
 void ADC_config() {
@@ -151,7 +158,7 @@ void communication_manager(volatile uint8_t buttonName) {
         slave_handler(STEPPER_ADC_PIN, STEPPER_SLAVE_ADDRESS);
       break;
     case 2:
-        TWI_STOP;
+        end_conn();
       break;
     default:
       break;
@@ -161,7 +168,7 @@ void communication_manager(volatile uint8_t buttonName) {
 void slave_handler( uint8_t VinPort, uint8_t slave_addr){
   if(!slave){
     PORTB ^= 1;
-    ADC_config();
+    setup();
     slave = slave_addr;
     ADMUX = (ADMUX & 0xF0) | (VinPort & 0x0F);
     ADCSRA |= (1<<ADEN);
@@ -177,12 +184,11 @@ void end_conn(){
   readyFlag = 0;
   sendCount = 0;
   latestData = 0;
-  ADMUX &= 0xF0;
+  ADMUX &= 0xF0; 
   ADCSRA &= ~(1<<ADEN);
-  TIMER_perscalar_selct(0,0); // turns off timer/clock 0 when not needed 
   TWI_STOP;
 
-  sleepStatusAdc = 1;
+  sleepStatusAdc = 0;
 }
 
 // Simple Moving Average

@@ -49,7 +49,7 @@ int main(){
   USART_config();
   TIMER_config();
   FAN_POWER_DDRx |= (1<<FAN_POWER_PIN);
-  INT0_config_falling();
+  INT0_config_onlow();
   DB_config_timer2();
   
   SLEEP_enter_power_down();

@@ -99,7 +99,6 @@ void SLEEP_enter_adc() {
     set_sleep_mode(SLEEP_MODE_ADC);
     sleep_enable();
     sei();           // Enable global interrupts
-    sleep_cpu();     // Enter sleep
     sleep_disable(); // Immediately disable after waking
 }
 

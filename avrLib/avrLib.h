@@ -136,7 +136,7 @@ void DB_config_timer2(){
     // Configure Timer2 in CTC mode for debounce interval (~5ms)
     TCCR2 |= (1<<WGM21);
     TIMSK |= (1<<OCIE2);
-    OCR2 = (uint8_t) 5;
+    OCR2 = (uint8_t) 20;
 }
 
 ///////////////////// port activation ////////////////////////
@@ -158,38 +158,40 @@ void SET_ports(volatile uint8_t *PORTx_Register, uint8_t *Pxn){ //E.g. DDRC, DDC
 ///////////////////// external interrupts ////////////////////////
 
 // 6
-void INT0_config_falling() {
+void INT0_config_onlow() {
     sei();  
     // configuration for the interrupt  
     GICR |= (1 << INT0);        // Enable INT0
 
     MCUCR &= ~(1 << ISC01);     // ISC01 = 0
     MCUCR &= ~(1 << ISC00);   // ISC00 = 0 → trigger on low level
+    
     DDRD &= ~(1 << PD2);        // PD2 as input
     PORTD |= (1 << PD2);        // Enable internal pull-up
 } 
 
 // 7
-void INT1_config_falling() { 
+void INT1_config_onlow() { 
     sei(); 
     // configuration for the interrupt  
     GICR |= (1 << INT1); // external interrupt request 0 enabled (INT0, not INT1)  
+
     MCUCR &= ~(1 << ISC10);   // ISC10 = 1
-    MCUCR |= (1 << ISC11); // ISC11 = 1
+    MCUCR &= ~(1 << ISC11); // ISC11 = 1
   
     DDRD &= ~(1 << PD3); // Set PD3 as input  
     PORTD |= (1 << PD3);  // Enable pull-up resistor on PD3
 }
 
-void INT2_config_falling() { 
-    sei(); 
-    // configuration for the interrupt  
-    GICR |= (1 << INT2); // external interrupt request 0 enabled (INT0, not INT1)  
-    MCUCSR &= ~(1<<ISC2);    
+// void INT2_config_onlow() { 
+//     sei(); 
+//     // configuration for the interrupt  
+//     GICR |= (1 << INT2); // external interrupt request 0 enabled (INT0, not INT1)  
+//     MCUCSR &= ~(1<<ISC2);    
 
-    DDRB &= ~(1 << PB2); // Set PB2 as input  
-    PORTB |= (1 << PB2);  // Enable pull-up resistor on PB2
-}
+//     DDRB &= ~(1 << PB2); // Set PB2 as input  
+//     PORTB |= (1 << PB2);  // Enable pull-up resistor on PB2
+// }
 
 
 ///////////////////// for servo motor ////////////////////////
