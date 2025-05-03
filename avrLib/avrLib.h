@@ -176,7 +176,7 @@ void interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE() {
     sei();  
   // configuration for the interrupt  
   GICR |= (1 << INT0); // external interrupt request 0 enabled (INT0, not INT1)  
-  MCUCR |= (1 << ISC00);   // ISC01 = 1
+  MCUCR &= ~(1 << ISC00);   // ISC01 = 1
   MCUCR &= ~(1 << ISC01);  // ISC00 = 0
 
   DDRD &= ~(1 << PD2); // Set PD2 as input  
@@ -225,13 +225,14 @@ uint8_t pressed(uint8_t pin_port, uint8_t bitPosition) {
 uint8_t debounce(volatile uint8_t *pin_port, uint8_t bitPosition) {  
 // debounce function that takes in volatile variable uint8 pointer pin_port and integer bitPosition  
 if (pressed(*pin_port, bitPosition)) {  
-    _delay_ms(20);
+    _delay_ms(5);
     if ((*pin_port & (1 << bitPosition)) == 0) {  
     return 1;  
     }  
 }  
 return 0;  
 }  
+
 
 
 ///////////////////// for servo motor ////////////////////////

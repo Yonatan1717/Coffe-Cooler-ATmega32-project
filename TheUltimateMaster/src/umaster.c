@@ -112,7 +112,7 @@ void ADC_config(){
 
   ADC_Noise_Reduse; // set ADC Noise Reduction
   ADC_Prescaler_Selections(16); // Select prescaler for ADC
-  ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
+  // ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
   ADCSRA |= (1<<ADEN) |(1<<ADSC);
 
   TCCR0 |= (1<<WGM01);

@@ -9,7 +9,7 @@
 #include <USART.h>
 
 volatile uint16_t adc_resultat = 0;
-volatile _Bool ready = 0;
+volatile _Bool readyFlag = 0;
 
 void config();
 void ADC_config();
@@ -22,11 +22,11 @@ ISR(ADC_vect) {
   sum += ADC;
   count++;
 
-  if (count >= 1000) {
-    adc_resultat = sum / 1000; // Gjennomsnitt
+  if (count >= 1500) {
+    adc_resultat = sum / 1500; // Gjennomsnitt
     count = 0;
     sum = 0;
-    ready = 1;
+    readyFlag = 1;
     USART_sendData((uint8_t) (round((float) (adc_resultat/3.9))));
   }
 
@@ -37,7 +37,7 @@ ISR(ADC_vect) {
 
 int main(){
   // DDRD |= (1<<PD6)| (1<<PB5);
-  USART_config();
+  USART_config(0);
   
 
   SETUP();
@@ -54,14 +54,14 @@ int main(){
   ADC_config();
 
   while(1){
-    if(ready){
+    if(readyFlag){
       CLEAR_DISPLAY();
       WRITE_STRING("Temp: ", 0x00);
       WRITE_NUMBER_noAddr((adc_resultat*(5/10.24)));
       WRITE_STRING_noAddr(" ");
       WRITE_STRING_SINGLE_noAddr(0b11011111);
       WRITE_STRING_noAddr("C");
-      ready = 0;
+      readyFlag = 0;
       _delay_ms(200);
     }
     
@@ -74,7 +74,6 @@ void ADC_config(){
   sei();
   ADC_Noise_Reduse; // set ADC Noise Reduction
   ADC_Prescaler_Selections(32); // Select prescaler for ADC
-  // ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
   ADCSRA |= (1<<ADEN) | (1<<ADIE) |(1<<ADSC);
 }
 

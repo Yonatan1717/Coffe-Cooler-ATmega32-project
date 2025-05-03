@@ -16,7 +16,7 @@ ISR(USART_RXC_vect){
   PORTB |= 1;
   recivedData = UDR;
   if(recivedData >= 255) {
-    OCR0 = 255-254;
+    OCR0 = 1;
     OCR2 = 255;
   }
   else {
@@ -33,7 +33,7 @@ ISR(INT0_vect) {
 
 int main(){
   DDRB |= 1;
-  USART_config();
+  USART_config(1);
   Timer_config();
   interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
   while(1);
