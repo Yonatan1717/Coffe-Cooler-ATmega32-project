@@ -2,40 +2,58 @@
 #define __DELAY_BACKWARD_COMPATIBLE__
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avrLib.h>
-#include <I2C.h>
-#include <ADC.h>
 #include <math.h>
-#include <USART.h>
+#include "avrLib.h"
+#include "USART.h"
 
-volatile uint8_t recivedData = 0;
+#define FAN_POWER_PORT PORTB
+#define FAN_POWER_DDRx DDRB
+#define FAN_POWER_PIN PB0
+
+volatile uint8_t receivedData = 0;
 
 void TIMER_config();
 
-ISR(USART_RXC_vect){
-  PORTB |= 1;
-  recivedData = UDR;
-  if(recivedData >= 255) {
-    OCR0 = 255-254;
-    OCR2 = 255;
+ISR(USART_RXC_vect) {
+  // alot must be fixed
+  receivedData = UDR;
+  if(receivedData >= 254) {
+    OCR0 = 1;
+    OCR2 = 254;
   }
   else {
-    OCR0 = 255-recivedData;
-    OCR2 = recivedData;
+    OCR0 = 255-receivedData;
+    OCR2 = receivedData;
+  }
+
+  if(receivedData == 255) {
+    // turn off signal
+    CLEAR_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
+    // back to power down mode
+    SLEEP_enter_power_down();
   }
 }
 
 ISR(INT0_vect) {  
-  if (debounce(&PIND, PD2)) { 
-    PORTB ^= (1<<PB0);
-  }  
+  DB_start_timer();
 } 
 
+ISR(TIMER2_COMP_vect) {
+  if ((PIND & (1<< PD2)) == 0) { 
+    TOGGLE_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
+  }  
+  DB_stop_timer();
+}
+
 int main(){
-  DDRB |= 1;
   USART_config();
   TIMER_config();
-  interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
+  FAN_POWER_DDRx |= (1<<FAN_POWER_PIN);
+  INT0_config_falling();
+  DB_config_timer2();
+  
+  SLEEP_enter_power_down();
+
   while(1);
 }
 
@@ -60,6 +78,6 @@ void TIMER_config(){
   TIMER_perscalar_selct(2,64);
   uint8_t Top2= 50;
   OCR2 = Top2;
-  DDRD |= (1<<PB7);
+  DDRD |= (1<<PD7);
   
 }

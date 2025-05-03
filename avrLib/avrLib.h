@@ -4,7 +4,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include <util/delay.h>
+#include <avr/sleep.h>
 
+// error returns //
+#define TIMER_INVALID_ID 11
+#define TIMER_INVALID_PRESCALER 12
 
 // nyttige macros //
 #define ACTIVATE_OUTPUT_PORTS_m(DDRx, DDxn_liste) ACTIVATE_OUTPUT_PORTS(&DDRx, DDxn_liste)
@@ -12,7 +16,6 @@
 #define SET_PORT(PORTx, Pxn) PORTx |= (1<<Pxn)
 #define CLEAR_PORT(PORTx, Pxn) PORTx &= ~(1<<Pxn)
 #define TOGGLE_PORT(PORTx, Pxn) PORTx ^= (1<<Pxn)
-
 
 // servo //
 #define SERVO_MIDDLE(OCR1x) OCR1x = 1500 - 1
@@ -29,75 +32,75 @@ const uint16_t servorStop = 1437;
 
 
 // 1
-int TIMER_perscalar_selct(uint8_t timer_clock_num, uint16_t bit_description){
+int TIMER_perscalar_selct(uint8_t timer_clock_id, uint16_t bit_description){
     // side 127 tabell 54 for clock 2
     // side 110 tabell 48 for clock 1
     // side 82 tabell 42 for clock 0
 
     // exit status code 1: ugyldig timer/clock Number
     // exit status code 2: ugyldig bit description
-    if(timer_clock_num > 2){
-        return 11;
+    if(timer_clock_id > 2){
+        return TIMER_INVALID_ID;
     }
 
     switch (bit_description)
     {
         case 0:
-            if(timer_clock_num == 0){
+            if(timer_clock_id == 0){
                 TCCR0 &= ~((1<<CS00) | (1<<CS01) | (1<<CS02));
-            }else if(timer_clock_num == 1){
+            }else if(timer_clock_id == 1){
                 TCCR1B &= ~((1<<CS10) | (1<<CS11) | (1<<CS12));
-            }else if(timer_clock_num == 2){
+            }else if(timer_clock_id == 2){
                 TCCR2 &= ~((1<<CS20) | (1<<CS21) | (1<<CS22));
             }
             break;
         case 1:
-            if(timer_clock_num == 0){
+            if(timer_clock_id == 0){
                 TCCR0 |= (1<<CS00);
-            }else if(timer_clock_num == 1){
+            }else if(timer_clock_id == 1){
                 TCCR1B |= (1<<CS10);
-            }else if(timer_clock_num == 2){
+            }else if(timer_clock_id == 2){
                 TCCR2 |= (1<<CS20);
             }
             break;
         case 8:
-            if(timer_clock_num == 0){
+            if(timer_clock_id == 0){
                 TCCR0 |= (1<<CS01);
-            }else if(timer_clock_num == 1){
+            }else if(timer_clock_id == 1){
                 TCCR1B |= (1<<CS11);
-            }else if(timer_clock_num == 2){
+            }else if(timer_clock_id == 2){
                 TCCR2 |= (1<<CS21);
             }
             break;
         case 64:
-            if(timer_clock_num == 0){
+            if(timer_clock_id == 0){
                 TCCR0 |= (1<<CS01) |(1<<CS00);
-            }else if(timer_clock_num == 1){
+            }else if(timer_clock_id == 1){
                 TCCR1B |= (1<<CS10) | (1<< CS11);
-            }else if(timer_clock_num == 2){
+            }else if(timer_clock_id == 2){
                 TCCR2 |= (1<<CS22);
             }
             break;
         case 256:
-            if(timer_clock_num == 0){
+            if(timer_clock_id == 0){
                 TCCR0 |= (1<<CS02);
-            }else if(timer_clock_num == 1){
+            }else if(timer_clock_id == 1){
                 TCCR1B |= (1<<CS12);
-            }else if(timer_clock_num == 2){
+            }else if(timer_clock_id == 2){
                 TCCR2 |= (1<<CS22) | (1<<CS21);
             }
             break;
         case 1024:
-            if(timer_clock_num == 0){
+            if(timer_clock_id == 0){
                 TCCR0 |= (1<<CS00) | (1<<CS02);
-            }else if(timer_clock_num == 1){
+            }else if(timer_clock_id == 1){
                 TCCR1B |= (1<<CS10) | (1<<CS12);
-            }else if(timer_clock_num == 2){
+            }else if(timer_clock_id == 2){
                 TCCR2 |= (1<<CS20) | (1<<CS21) | (1<<CS22);
             }
             break;
         default:
-            return 12;
+            return TIMER_INVALID_PRESCALER;
     }
 
     return bit_description;
@@ -107,8 +110,8 @@ int TIMER_perscalar_selct(uint8_t timer_clock_num, uint16_t bit_description){
 ///////////////////// debounce ////////////////////////
 
 // 2
-void DB_start_timer(uint8_t timer_clock_num, uint16_t prescaler) {
-    switch (timer_clock_num)
+void DB_start_timer(uint8_t timer_clock_id, uint16_t prescaler) {
+    switch (timer_clock_id)
     {
     case 0:
         TCNT0 = 0;
@@ -122,13 +125,19 @@ void DB_start_timer(uint8_t timer_clock_num, uint16_t prescaler) {
     default:
         break;
     }
-    TIMER_perscalar_selct(timer_clock_num, prescaler);
+    TIMER_perscalar_selct(timer_clock_id, prescaler);
 }
 // 3
-void DB_stop_timer(uint8_t timer_clock_num) {
-    TIMER_perscalar_selct(timer_clock_num, 0);
+void DB_stop_timer(uint8_t timer_clock_id) {
+    TIMER_perscalar_selct(timer_clock_id, 0);
 }
 
+void DB_config_timer2(){
+    // Configure Timer2 in CTC mode for debounce interval (~5ms)
+    TCCR2 |= (1<<WGM21);
+    TIMSK |= (1<<OCIE2);
+    OCR2 = (uint8_t) 5;
+}
 
 ///////////////////// port activation ////////////////////////
 
@@ -151,13 +160,13 @@ void SET_ports(volatile uint8_t *PORTx_Register, uint8_t *Pxn){ //E.g. DDRC, DDC
 // 6
 void INT0_config_falling() {
     sei();  
-  // configuration for the interrupt  
-  GICR |= (1 << INT0); // external interrupt request 0 enabled (INT0, not INT1)  
-  MCUCR &= ~(1 << ISC00);   // ISC00 = 1
-  MCUCR |= (1 << ISC01);  // ISC01 = 1
+    // configuration for the interrupt  
+    GICR |= (1 << INT0);        // Enable INT0
 
-  DDRD &= ~(1 << PD2); // Set PD2 as input  
-  PORTD |= (1 << PD2);  // Enable pull-up resistor on PD2  
+    MCUCR &= ~(1 << ISC01);     // ISC01 = 0
+    MCUCR &= ~(1 << ISC00);   // ISC00 = 0 → trigger on low level
+    DDRD &= ~(1 << PD2);        // PD2 as input
+    PORTD |= (1 << PD2);        // Enable internal pull-up
 } 
 
 // 7
@@ -168,8 +177,18 @@ void INT1_config_falling() {
     MCUCR &= ~(1 << ISC10);   // ISC10 = 1
     MCUCR |= (1 << ISC11); // ISC11 = 1
   
-    DDRD &= ~(1 << PD3); // Set PD2 as input  
-    PORTD |= (1 << PD3);  // Enable pull-up resistor on PD2  
+    DDRD &= ~(1 << PD3); // Set PD3 as input  
+    PORTD |= (1 << PD3);  // Enable pull-up resistor on PD3
+}
+
+void INT2_config_falling() { 
+    sei(); 
+    // configuration for the interrupt  
+    GICR |= (1 << INT2); // external interrupt request 0 enabled (INT0, not INT1)  
+    MCUCSR &= ~(1<<ISC2);    
+
+    DDRB &= ~(1 << PB2); // Set PB2 as input  
+    PORTB |= (1 << PB2);  // Enable pull-up resistor on PB2
 }
 
 
@@ -211,16 +230,24 @@ uint32_t SERVO_config_timer1_c(){
     return TOP;
 }
 
+// sleep modes
+void SLEEP_enter_power_down() {
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    sleep_enable();
+    sei();           // Enable global interrupts
+    sleep_cpu();     // Enter sleep
+    sleep_disable(); // Immediately disable after waking
+}
 
 
 
-
-
-
-
-
-
-
+void SLEEP_enter_idle() {
+    set_sleep_mode(SLEEP_MODE_IDLE);
+    sleep_enable();
+    sei();
+    sleep_cpu();
+    sleep_disable();
+  }
 
 
 

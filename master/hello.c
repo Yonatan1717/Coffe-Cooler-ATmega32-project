@@ -125,7 +125,7 @@ short int ADC_differencial(){
 
 
 
-void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(short V_Difference, unsigned char *PORT_NAME,unsigned char PORT_NAMES[]){
+void ADC_activate_ports_using_adc(short V_Difference, unsigned char *PORT_NAME,unsigned char PORT_NAMES[]){
     //ADDS 2500 to V_difference since SWITCH statements can't be zero
     unsigned char difference = round(((V_Difference+2500)/1000));
     printf("%i\n",difference);
