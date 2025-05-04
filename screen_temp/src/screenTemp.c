@@ -10,7 +10,6 @@
 
 volatile uint16_t adc_resultat = 0;
 volatile _Bool readyFlag = 0;
-volatile _Bool readyFlag = 0;
 
 void config();
 void ADC_config();
@@ -57,12 +56,12 @@ int main(){
 
   while(1){
     if(readyFlag){
-      CLEAR_DISPLAY();
-      WRITE_STRING("Temp: ", 0x00);
-      WRITE_NUMBER_noAddr((adc_resultat*(5/10.24)));
-      WRITE_STRING_noAddr(" ");
-      WRITE_STRING_SINGLE_noAddr(0b11011111);
-      WRITE_STRING_noAddr("C");
+      LCD_clear_display();
+      LCD_write_string("Temp: ", 0x00);
+      LDC_write_number_no_addr((adc_resultat*(5/10.24)));
+      LDC_write_string_no_addr(" ");
+      LCD_write_character_no_addr(0b11011111);
+      LDC_write_string_no_addr("C");
       readyFlag = 0;
       _delay_ms(200);
     }
@@ -74,7 +73,6 @@ int main(){
 
 void ADC_config(){
   sei();
-  ADC_Noise_Reduse; // set ADC Noise Reduction
   ADC_Prescaler_Selections(32); // Select prescaler for ADC
   ADCSRA |= (1<<ADEN) | (1<<ADIE) |(1<<ADSC);
 }
