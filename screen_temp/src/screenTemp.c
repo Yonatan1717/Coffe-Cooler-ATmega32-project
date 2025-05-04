@@ -8,6 +8,19 @@
 #include <ADC.h>
 #include <USART.h>
 
+
+#define ADC_SAMPLE_SIZE  16
+
+
+// Simple moving average
+volatile uint32_t adcAvg = 0;
+volatile uint16_t adcBuffer[ADC_SAMPLE_SIZE];
+#if ADC_SAMPLE_SIZE > 255
+  volatile uint16_t adcBuffer_index = 0;
+#else
+  volatile uint8_t adcBuffer_index = 0;
+#endif
+
 volatile uint16_t adc_resultat = 0;
 volatile _Bool readyFlag = 0;
 
@@ -16,22 +29,9 @@ void ADC_config();
 
 
 ISR(ADC_vect) {
-  static uint16_t count = 0;
-  static uint32_t sum = 0;
-
-  sum += ADC;
-  count++;
-
-  if (count >= 1000) {
-    adc_resultat = sum / 1000; // Gjennomsnitt
-    count = 0;
-    sum = 0;
-    readyFlag = 1;
-
-        USART_sendData((uint8_t) (round((float) (adc_resultat/3.9))));
-        
-  }
-
+ 
+  SMA_update(ADC);
+  USART_sendData((uint8_t) (round((float) (adc_resultat*(5/10.24)))));        
   ADCSRA |= (1<<ADSC);
 }
 
@@ -41,7 +41,6 @@ int main(){
   // DDRD |= (1<<PD6)| (1<<PB5);
   USART_config(0);
   
-
   LCD_setup();
 	LCD_function_set();
 	LCD_display_on();
@@ -66,6 +65,9 @@ int main(){
       readyFlag = 0;
       _delay_ms(200);
     }
+
+    SLEEP_enter_adc();
+
   };
       
 }
@@ -74,11 +76,17 @@ int main(){
 
 void ADC_config(){
   sei();
-  ADC_Noise_Reduse; // set ADC Noise Reduction
   ADC_Prescaler_Selections(32); // Select prescaler for ADC
   // ADMUX = (1<<REFS1)|(1<<REFS0); // Bruk intern 2.56V referanse
   ADCSRA |= (1<<ADEN) | (1<<ADIE) |(1<<ADSC);
 }
 
+void SMA_update(uint16_t newADC) {
+  uint16_t oldADC = adcBuffer[adcBuffer_index];
+  adcBuffer[adcBuffer_index] = newADC;
 
+  adcAvg = adcAvg + newADC-oldADC;
+  adc_resultat = adcAvg/ADC_SAMPLE_SIZE;
 
+  adcBuffer_index = (adcBuffer_index + 1) % ADC_SAMPLE_SIZE;
+}

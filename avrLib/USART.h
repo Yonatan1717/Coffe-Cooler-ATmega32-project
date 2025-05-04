@@ -6,15 +6,16 @@
 #include <util/delay.h>
 
 
-void USART_config(_Bool type)
+void USART_config(_Bool type_0_sender_1_reciver)
 {
-  if(type) {
-    sei();
-    UCSRB = (1<<RXEN) | (1<<TXEN) | (1<<RXCIE);
-  } else {
-    UCSRB = (1<<RXEN) | (1<<TXEN);
-  }
+  // initialize and set baud rate to 9600 with 0.2% error margine
+  UBRRL = 12;
+  UCSRA |= (1<<RXEN) | (1<<TXEN) | (1<< U2X);
   
+  if(type_0_sender_1_reciver) {
+    sei();
+    UCSRB |= (1<<RXCIE);
+  }
 }
 
 void USART_sendData(uint8_t data){

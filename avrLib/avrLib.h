@@ -267,7 +267,6 @@ void SLEEP_enter_idle() {
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_enable();
     sei();
-    sleep_cpu();
     sleep_disable();
   }
 

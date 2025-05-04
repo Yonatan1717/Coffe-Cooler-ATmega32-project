@@ -17,30 +17,30 @@ void TIMER_config();
 ISR(USART_RXC_vect) {
   // alot must be fixed
   receivedData = UDR;
-  if(receivedData >= 254) {
-    OCR0 = 1;
-    OCR2 = 254;
-  }
-  else {
-    OCR0 = 255-receivedData;
-    OCR2 = receivedData;
+  uint8_t factorX = 0;
+
+  if (receivedData <= 25) {
+    factorX = 0;
+    CLEAR_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
+  } else if (receivedData >= 26 && receivedData <= 70) {
+    factorX = 50 + (uint8_t)(((receivedData - 26) * 197.0) / 44.0);  // 44 fordi 70-26 = 44 trinn
+  } else {
+    factorX = 255;
   }
 
-  if(receivedData == 255) {
-    // turn off signal
-    CLEAR_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
-    // back to power down mode
-  }
+  OCR0 = factorX;
+  OCR2 = 255 - factorX;
+
 }
 
-      ISR(INT0_vect) {  
-        DB_start_timer(1, 1024);
-      } 
+ISR(INT0_vect) {  
+  DB_start_timer(1, 1024);
+} 
 
-      ISR(TIMER2_COMP_vect) {
-        TOGGLE_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
-        DB_stop_timer(1);
-      }
+ISR(TIMER2_COMP_vect) {
+  TOGGLE_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
+  DB_stop_timer(1);
+}
 
 int main(){
   USART_config(1);
@@ -48,20 +48,13 @@ int main(){
   FAN_POWER_DDRx |= (1<<FAN_POWER_PIN);
   INT0_config_onlow();
   DB_config_timer(1);
-  
-  SLEEP_enter_power_down();
 
-  while(1);
+  while(1) {
+    SLEEP_enter_idle();
+  };
 }
 
 void TIMER_config(){
-  // TCCR1A |= (1<<WGM11) | (1<<COM1A1);
-  // TCCR1B |= (1<<WGM12) | (1<<WGM13); 
-  // TIMER_perscalar_selct(1,64);
-  // ICR1 = (uint8_t) 255;
-  // uint8_t Top = 50;
-  // OCR1A = Top;
-  // DDRD |= (1<<PD5);
 
   TCCR0 |= (1<<WGM01) | (1<<WGM00);
   TCCR0 |= (1<<COM01);
@@ -76,5 +69,4 @@ void TIMER_config(){
   uint8_t Top2= 50;
   OCR2 = Top2;
   DDRD |= (1<<PD7);
-  
 }

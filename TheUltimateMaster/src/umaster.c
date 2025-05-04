@@ -31,6 +31,7 @@ volatile _Bool readyFlag = 0;
 volatile uint8_t sendCount = 0;
 volatile uint8_t buttonName = 0;
 volatile uint16_t latestData = 0;
+
 // Simple moving average
 volatile uint32_t adcAvg = 0;
 volatile uint16_t adcBuffer[ADC_SAMPLE_SIZE];
@@ -106,13 +107,13 @@ int main(){
   INT1_config_onlow();
   // INT2_config_onlow();
       
-      while(1) {
-        if(sleepStatusAdc) {
-          SLEEP_enter_adc();
-        } else {
-          SLEEP_enter_power_down();
-        }
-      };
+  while(1) {
+    if(sleepStatusAdc) {
+      SLEEP_enter_adc();
+    } else {
+      SLEEP_enter_power_down();
+    }
+  };
 
 }
 

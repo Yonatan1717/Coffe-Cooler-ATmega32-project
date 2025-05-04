@@ -30,10 +30,10 @@ void config(){
 
 int main(){
   config();
-  SERVO_config_timer1_nc(0,50,1);
+  SERVO_config_timer1_nc(50,1);
 
-      while(1) {
-        if(!isReciving) SLEEP_enter_power_down();
-      };
+  while(1) {
+    if(!isReciving) SLEEP_enter_power_down();
+  };
       
  }
