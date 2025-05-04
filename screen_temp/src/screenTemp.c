@@ -27,7 +27,9 @@ ISR(ADC_vect) {
     count = 0;
     sum = 0;
     readyFlag = 1;
-    USART_sendData((uint8_t) (round((float) (adc_resultat/3.9))));
+
+        USART_sendData((uint8_t) (round((float) (adc_resultat/3.9))));
+        
   }
 
   ADCSRA |= (1<<ADSC);

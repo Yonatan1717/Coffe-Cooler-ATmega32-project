@@ -240,7 +240,7 @@ uint32_t SERVO_config_timer1_c(){
     
     TCCR1A |= (1<<WGM11);
     TCCR1B |= (1<<WGM12) | (1<<WGM13);
-    TCCR1A |= (1<<COM1A1z); TCCR1A &= ~(1<<COM1A0);
+    TCCR1A |= (1<<COM1A1); TCCR1A &= ~(1<<COM1A0);
     DDRD |= (1<<PD5);
 
     TIMER_perscalar_selct(1,1);

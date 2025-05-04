@@ -114,10 +114,10 @@ void config(){
 
 void STP_handle_data() {
   if(recivedData >= 800) {
-    STP_control_positiv(&on);
+    STP_control_negativ(&on);
     reset = 1;
   } else if(recivedData <= 200) {
-    STP_control_negativ(&on);
+    STP_control_positiv(&on);
     reset = 1;
   } else {
     if(reset) {
