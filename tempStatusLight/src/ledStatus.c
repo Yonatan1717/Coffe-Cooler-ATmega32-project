@@ -2,39 +2,42 @@
 #define __DELAY_BACKWARD_COMPATIBLE__
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avrLib.h>
+#include <I2C.h>
+#include <ADC.h>
 #include <math.h>
 #include <USART.h>
 
 #define FACTOR 40
 
-volatile uint8_t receivedData = 0;
+volatile uint8_t recivedData = 0;
 
-void TIMER_config();
+void Timer_config();
 
 ISR(USART_RXC_vect){
   PORTB |= 1;
-  receivedData = UDR;
-  if (receivedData < 4) {
+  recivedData = UDR;
+  if (recivedData < 4) {
     OCR0 = 0;
     OCR2 = 255;
-  } else if (receivedData >= 5 && receivedData <= 12) {
+  } else if (recivedData >= 5 && recivedData <= 12) {
     uint8_t factorX = FACTOR*1;
     OCR0 = factorX;
     OCR2 = 255-factorX;
-  } else if (receivedData >= 13 && receivedData <= 25) {
+  } else if (recivedData >= 13 && recivedData <= 25) {
     uint8_t factorX = FACTOR*2;
     OCR0 = factorX;
     OCR2 = 255-factorX;
     PORTB &= ~(1<<PB0);
-  } else if (receivedData >= 40 && receivedData <= 50) {
+  } else if (recivedData >= 40 && recivedData <= 50) {
     uint8_t factorX = FACTOR*3;
     OCR0 = factorX;
     OCR2 = 255-factorX;
-  } else if (receivedData >= 55 && receivedData <= 65) {
+  } else if (recivedData >= 55 && recivedData <= 65) {
     uint8_t factorX = FACTOR*4;
     OCR0 = factorX;
     OCR2 = 255-factorX;
-  } else if (receivedData > 70) {
+  } else if (recivedData > 70) {
     uint8_t factorX = FACTOR*5;
     OCR0 = factorX;
     OCR2 = 255-factorX;
@@ -44,24 +47,21 @@ ISR(USART_RXC_vect){
   }
 }
 
-      ISR(INT0_vect) {  
-        DB_start_timer(1, 1024);
-      } 
-
-      ISR(TIMER2_COMP_vect) {
-        TOGGLE_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
-        DB_stop_timer(1);
-      }
+ISR(INT0_vect) {  
+  if (debounce(&PIND, PD2)) { 
+    PORTB ^= (1<<PB0);
+  }  
+} 
 
 int main(){
   DDRB |= 1;
   USART_config(1);
   Timer_config();
-  interruptConfig_INT0_FULLY_READY_LOGICAL_CHANGE();
+  INT0_config_onlow();
   while(1);
 }
 
-void TIMER_config(){
+void Timer_config(){
   // TCCR1A |= (1<<WGM11) | (1<<COM1A1);
   // TCCR1B |= (1<<WGM12) | (1<<WGM13); 
   // TIMER_perscalar_selct(1,64);
@@ -82,6 +82,6 @@ void TIMER_config(){
   TIMER_perscalar_selct(2,64);
   uint8_t Top2= 50;
   OCR2 = Top2;
-  DDRD |= (1<<PD7);
+  DDRD |= (1<<PB7);
   
 }
