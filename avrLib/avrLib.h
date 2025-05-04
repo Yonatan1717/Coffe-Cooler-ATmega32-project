@@ -20,7 +20,7 @@
 #define SERVO_R_90d_CLOCKWISE_FROM_MIDDLE(OCR1x) OCR1x = 500 - 1 
 #define SERVO_R_90d_ANTI_CLOCKWISE_FROM_MIDDLE(OCR1x) OCR1x = 2500 - 1
 #define SERVO_ANGLE_MOVE_STARTS_AT_ACLOCKWISE_90d(OCR1x, angle) OCR1x = 500-1 + (2000/180)*angle;
-#define SERVO_TURN_BASED_ON_ADC_RESULT(OCR1x, result) OCR1x = result + 500
+            #define SERVO_TURN_BASED_ON_ADC_RESULT(OCR1x, result) OCR1x = result + 500
 
 // servo continues
 #define SERVO_STOP(OCR1x) OCR1x = 1500 +1;

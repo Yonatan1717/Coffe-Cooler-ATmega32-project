@@ -8,6 +8,8 @@
 #include <math.h>
 #include <USART.h>
 
+#define FACTOR 40
+
 volatile uint8_t recivedData = 0;
 
 void Timer_config();
@@ -15,13 +17,33 @@ void Timer_config();
 ISR(USART_RXC_vect){
   PORTB |= 1;
   recivedData = UDR;
-  if(recivedData >= 255) {
-    OCR0 = 1;
+  if (recivedData < 4) {
+    OCR0 = 0;
     OCR2 = 255;
-  }
-  else {
-    OCR0 = 255-recivedData;
-    OCR2 = recivedData;
+  } else if (recivedData >= 5 && recivedData <= 12) {
+    uint8_t factorX = FACTOR*1;
+    OCR0 = factorX;
+    OCR2 = 255-factorX;
+  } else if (recivedData >= 13 && recivedData <= 25) {
+    uint8_t factorX = FACTOR*2;
+    OCR0 = factorX;
+    OCR2 = 255-factorX;
+    PORTB &= ~(1<<PB0);
+  } else if (recivedData >= 40 && recivedData <= 50) {
+    uint8_t factorX = FACTOR*3;
+    OCR0 = factorX;
+    OCR2 = 255-factorX;
+  } else if (recivedData >= 55 && recivedData <= 65) {
+    uint8_t factorX = FACTOR*4;
+    OCR0 = factorX;
+    OCR2 = 255-factorX;
+  } else if (recivedData > 70) {
+    uint8_t factorX = FACTOR*5;
+    OCR0 = factorX;
+    OCR2 = 255-factorX;
+  } else {
+    OCR0 = 255;
+    OCR2 = 0;
   }
 }
 
