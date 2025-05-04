@@ -13,28 +13,28 @@ void TIMER_config();
 
 ISR(USART_RXC_vect){
   PORTB |= 1;
-  recivedData = UDR;
-  if (recivedData < 4) {
+  receivedData = UDR;
+  if (receivedData < 4) {
     OCR0 = 0;
     OCR2 = 255;
-  } else if (recivedData >= 5 && recivedData <= 12) {
+  } else if (receivedData >= 5 && receivedData <= 12) {
     uint8_t factorX = FACTOR*1;
     OCR0 = factorX;
     OCR2 = 255-factorX;
-  } else if (recivedData >= 13 && recivedData <= 25) {
+  } else if (receivedData >= 13 && receivedData <= 25) {
     uint8_t factorX = FACTOR*2;
     OCR0 = factorX;
     OCR2 = 255-factorX;
     PORTB &= ~(1<<PB0);
-  } else if (recivedData >= 40 && recivedData <= 50) {
+  } else if (receivedData >= 40 && receivedData <= 50) {
     uint8_t factorX = FACTOR*3;
     OCR0 = factorX;
     OCR2 = 255-factorX;
-  } else if (recivedData >= 55 && recivedData <= 65) {
+  } else if (receivedData >= 55 && receivedData <= 65) {
     uint8_t factorX = FACTOR*4;
     OCR0 = factorX;
     OCR2 = 255-factorX;
-  } else if (recivedData > 70) {
+  } else if (receivedData > 70) {
     uint8_t factorX = FACTOR*5;
     OCR0 = factorX;
     OCR2 = 255-factorX;
