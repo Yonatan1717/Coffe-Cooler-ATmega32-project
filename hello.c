@@ -125,7 +125,7 @@ short int ADC_differencial(){
 
 
 
-void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(short V_Difference, unsigned char *PORT_NAME,unsigned char PORT_NAMES[]){
+void ADC_activate_ports_using_adc(short V_Difference, unsigned char *PORT_NAME,unsigned char PORT_NAMES[]){
     //ADDS 2500 to V_difference since SWITCH statements can't be zero
     unsigned char difference = round(((V_Difference+2500)/1000));
     printf("%i\n",difference);
@@ -161,9 +161,14 @@ void ACTIVATE_REGISTERS(unsigned char *DDRx_Register, unsigned char DDxn[]){ //E
 
 int main(){
 
-    char *helllo = "hello0000";
+    // char *helllo = "hello0000";
 
-    printf("%i", sizeof(helllo)-1);
+    // printf("%i", sizeof(helllo)-1);
+    int check = 0;
+    check = !check;
+    printf("%i           ", check);
+    check = !check;
+    printf("%i", check);
 
     return 0;
 }

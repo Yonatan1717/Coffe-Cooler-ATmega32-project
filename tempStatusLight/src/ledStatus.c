@@ -2,17 +2,14 @@
 #define __DELAY_BACKWARD_COMPATIBLE__
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avrLib.h>
-#include <I2C.h>
-#include <ADC.h>
 #include <math.h>
 #include <USART.h>
 
 #define FACTOR 40
 
-volatile uint8_t recivedData = 0;
+volatile uint8_t receivedData = 0;
 
-void Timer_config();
+void TIMER_config();
 
 ISR(USART_RXC_vect){
   PORTB |= 1;
@@ -47,11 +44,14 @@ ISR(USART_RXC_vect){
   }
 }
 
-ISR(INT0_vect) {  
-  if (debounce(&PIND, PD2)) { 
-    PORTB ^= (1<<PB0);
-  }  
-} 
+      ISR(INT0_vect) {  
+        DB_start_timer(1, 1024);
+      } 
+
+      ISR(TIMER2_COMP_vect) {
+        TOGGLE_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
+        DB_stop_timer(1);
+      }
 
 int main(){
   DDRB |= 1;
@@ -61,10 +61,10 @@ int main(){
   while(1);
 }
 
-void Timer_config(){
+void TIMER_config(){
   // TCCR1A |= (1<<WGM11) | (1<<COM1A1);
   // TCCR1B |= (1<<WGM12) | (1<<WGM13); 
-  // Clock_Select_Description_for_a_Timer_Counter_n(1,64);
+  // TIMER_perscalar_selct(1,64);
   // ICR1 = (uint8_t) 255;
   // uint8_t Top = 50;
   // OCR1A = Top;
@@ -72,16 +72,16 @@ void Timer_config(){
 
   TCCR0 |= (1<<WGM01) | (1<<WGM00);
   TCCR0 |= (1<<COM01);
-  Clock_Select_Description_for_a_Timer_Counter_n(0,64);
+  TIMER_perscalar_selct(0,64);
   uint8_t Top= 50;
   OCR0 = Top;
   DDRB |= (1<<PB3);
 
   TCCR2 |= (1<<WGM21) | (1<<WGM20);
   TCCR2 |= (1<<COM21);
-  Clock_Select_Description_for_a_Timer_Counter_n(2,64);
+  TIMER_perscalar_selct(2,64);
   uint8_t Top2= 50;
   OCR2 = Top2;
-  DDRD |= (1<<PB7);
+  DDRD |= (1<<PD7);
   
 }

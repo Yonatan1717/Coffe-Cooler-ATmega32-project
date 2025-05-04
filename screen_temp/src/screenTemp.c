@@ -10,6 +10,7 @@
 
 volatile uint16_t adc_resultat = 0;
 volatile _Bool readyFlag = 0;
+volatile _Bool readyFlag = 0;
 
 void config();
 void ADC_config();
@@ -38,18 +39,19 @@ ISR(ADC_vect) {
 int main(){
   // DDRD |= (1<<PD6)| (1<<PB5);
   USART_config(0);
+  USART_config(0);
   
 
-  SETUP();
-	FUNCTION_SET();
-	DISPLAY_ON_OFF();
-	CLEAR_DISPLAY();
-	ENTRY_MODE();
+  LCD_setup();
+	LCD_function_set();
+	LCD_display_on();
+	LCD_clear_display();
+	LCD_entry_mode();
 
   
-  WRITE_STRING("Booting up...", 0x00);
+  LCD_write_string("Booting up...", 0x00);
   _delay_ms(1000);
-  CLEAR_DISPLAY();
+  LCD_clear_display();
   
   ADC_config();
 
@@ -64,8 +66,8 @@ int main(){
       readyFlag = 0;
       _delay_ms(200);
     }
-    
   };
+      
 }
 
 

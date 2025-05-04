@@ -15,12 +15,11 @@
 #define TWI_STOP_START TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) |(1<<TWSTA)
 
 // Read and send data
-#define TWI_readData(buffer) buffer = TWDR// read data
-#define TWI_readData_ack(buffer) buffer = TWDR; TWI_SET_TWINT_ACK // read data
-#define TWI_readData_nack(buffer) buffer = TWDR; TWI_SET_TWINT // read data nack
-#define TWI_sendData_ML(data,transmitt_count) TWDR = data; --(*transmitt_count); TWI_SET_TWINT// send data
-#define TWI_sendData_ack(data) TWDR = data; TWI_SET_TWINT_ACK// send data
-#define TWI_sendData_nack(data) TWDR = data; TWI_SET_TWINT// send data nack
+#define TWI_readData_ack(buffer) do { buffer = TWDR; TWI_SET_TWINT_ACK; } while(0) // read data
+#define TWI_readData_nack(buffer) do { buffer = TWDR; TWI_SET_TWINT; } while(0) // read data nack
+#define TWI_sendData_ML(data,transmitt_count) do { TWDR = data; --(*transmitt_count); TWI_SET_TWINT; } while(0) // send data
+#define TWI_sendData_ack(data) do { TWDR = data; TWI_SET_TWINT_ACK; } while(0) // send data
+#define TWI_sendData_nack(data) do { TWDR = data; TWI_SET_TWINT; } while(0) // send data nack
 
 // Status code
 #define STATUS_CODE (TWSR & 0xF8)
@@ -35,11 +34,13 @@
 #define SET_SLAVE_ADRESS_7BIT(this_slave_addr_7bit) TWAR = (this_slave_addr_7bit << 1)
 
 // TWI send slave addr and mode
-#define TWI_SLA_W(slave_addr_7bit) TWDR = (slave_addr_7bit << 1); TWI_SET_TWINT
-#define TWI_SLA_R(slave_addr_7bit) TWDR = (slave_addr_7bit << 1) | 1; TWI_SET_TWINT
+#define TWI_WRITE 0
+#define TWI_READ  1
+#define TWI_SLA_W(slave_addr_7bit) do { TWDR = (slave_addr_7bit << 1) | TWI_WRITE; TWI_SET_TWINT; } while(0)
+#define TWI_SLA_R(slave_addr_7bit) do { TWDR = (slave_addr_7bit << 1) | TWI_READ; TWI_SET_TWINT; } while(0)
 
 // Set pull up resistor on SDA and SCL pins
-#define SET_PULL_UP_RESISTOR_ON_SDA_SCL DDRC &= ~((1<<PC1)|(1<<PC0)); PORTC |= (1<<PC1) | (1<<PC0)
+#define SET_PULL_UP_RESISTOR_ON_SDA_SCL do { DDRC &= ~((1<<PC1)|(1<<PC0)); PORTC |= (1<<PC1) | (1<<PC0); } while(0)
 
 
 
@@ -90,10 +91,8 @@ void TWI_return_to_not_addressed_slave(){
     TWI_SET_TWINT_ACK;
 }
 
-
-
 // main function
-uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
+uint8_t TWI_request_respons_close_11_status(uint8_t dest_slave_addr_7bit, uint8_t requested_value){
     uint8_t recived_data = 0;
     static uint8_t send_error_count = 0;
 
@@ -157,21 +156,7 @@ uint8_t reciveData_REQUESTED_AND_THEN_CLOSE_CONNECTION_PR_11_STATUS_CODE(uint8_t
     return recived_data;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
+uint8_t TWI_recive_data_close(uint8_t dest_slave_addr_7bit){
     uint8_t recivedData = 0;
     switch (STATUS_CODE)
     {
@@ -210,4 +195,70 @@ uint8_t reciveData_AND_THEN_CLOSE_CONNECTION(uint8_t dest_slave_addr_7bit){
     }
 
     return recivedData;
+}
+
+void TWI_send_continues_2byte_data(volatile uint8_t *slave, volatile uint16_t *latestData,volatile uint8_t *sendCount, volatile _Bool *readyFlag) {
+    switch (STATUS_CODE)
+    {
+        case 0x08:
+            TWI_send_sla_w_or_r('w',*slave);
+            break;
+        case 0x18:
+            if(*sendCount == 0) {
+                TWI_send_data((*latestData>>8),0);
+                ++(*sendCount);
+            } 
+            else if(*sendCount == 1){
+                TWI_send_data((*latestData & 0x00FF),0);
+                *sendCount = 0;
+                *readyFlag = 0; 
+            } 
+            break;
+        case 0x28:
+            if(*sendCount == 0) {
+                TWI_send_data((*latestData>>8),0);
+                ++(*sendCount);
+            } 
+            else if(*sendCount == 1){
+                TWI_send_data((*latestData & 0x00FF),0);
+                *sendCount = 0;
+                *readyFlag = 0; 
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+void TWI_recive_continues_2byte_data_slave(volatile uint16_t *recivedData, uint16_t recivedDataInitalvalue, volatile _Bool *readyFlag) {
+    static uint8_t high_byte = 0; 
+    static uint8_t low_byte = 0;
+    static uint8_t recivedCount = 0;
+
+    switch (STATUS_CODE)
+    {
+        case 0x60:
+            TWI_SET_TWINT_ACK;
+            break;
+        case 0x80:
+            if (recivedCount == 0) {
+                high_byte = TWI_recived_data(1);
+                ++recivedCount;
+            }
+            else if (recivedCount == 1) {
+                low_byte = TWI_recived_data(1);
+                *recivedData = ((uint16_t) high_byte << 8) | low_byte;
+                recivedCount = 0;
+                *readyFlag = 1;
+            }
+            break;
+        case 0xA0:
+            recivedCount = 0;
+            *recivedData = recivedDataInitalvalue;
+            *readyFlag = 0;
+            TWI_return_to_not_addressed_slave();
+            break;
+        default:
+            break;
+    }
 }

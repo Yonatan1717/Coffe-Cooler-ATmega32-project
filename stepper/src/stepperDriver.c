@@ -20,85 +20,61 @@
 #define enLow stepperDriverPORT &= ~(1<<en)
 #define stepLow stepperDriverPORT &= ~(1<<step)
 
+#define TIMER2_TOP 5
+
+
 volatile _Bool on = 0;
+volatile _Bool reset = 0;
+volatile _Bool readyFlag = 0;
 volatile uint16_t recivedData = 500;
-volatile uint8_t recivedCount = 0;
-volatile _Bool ready = 0;
+volatile _Bool enterSleepMode = 1;
 
-void stepperControlerNegatives(volatile _Bool *on);
 void config();
-void stepperControlerPositiv(volatile _Bool *on);
-void Timer_config();
+void TIMER_config();
+void STP_handle_data();
+void STP_control_negativ(volatile _Bool *on);
+void STP_control_positiv(volatile _Bool *on);
 
 
 
-ISR(TWI_vect){
-  static uint8_t high_byte = 0; 
-  static uint8_t low_byte = 0;
-  switch (STATUS_CODE)
-  {
-  case 0x60:
-    TWI_SET_TWINT_ACK;
-    break;
-  case 0x80:
-    if (recivedCount == 0) {
-      high_byte = TWI_recived_data(1);
-      ++recivedCount;
-    }
-    else if (recivedCount == 1) {
-      low_byte = TWI_recived_data(1);
-      recivedData = ((uint16_t)high_byte << 8) | low_byte;
-      recivedCount = 0;
-      ready = 1;
-    }
-    break;
-  case 0xA0:
-    recivedCount = 0;
-    recivedData = 500;
-    ready = 0;
-    on = 0;
-    dirLow; // for test
-    stepLow; // for test
-    TWI_return_to_not_addressed_slave();
-    break;
-  default:
-    break;
+ISR(TWI_vect) {
+  if (STATUS_CODE == 0x60) {
+    PORTB ^= (1<<3);
+    enterSleepMode = 0; // wake up 
+    TIMER_perscalar_selct(2, 8); // Start Timer2
   }
+  else if (STATUS_CODE == 0xA0) {
+    PORTB ^= (1<<3);
+    enterSleepMode = 1; // sleep
+    TIMER_perscalar_selct(2, 0); // Stopp Timer2
+  }
+
+  TWI_recive_continues_2byte_data_slave(&recivedData, 500, &readyFlag); 
 }
 
-ISR(TIMER0_COMP_vect){
-
-  if(ready)
-  {
-    if(recivedData >= 800){
-      stepperControlerPositiv(&on);
-    }
-    else if(recivedData <= 200){
-      stepperControlerNegatives(&on);
-    }
-    else{
-      dirLow;
-      stepLow;
-    };
-    
-    ready = 0;
+ISR(TIMER2_COMP_vect) {
+  if(readyFlag) {
+    STP_handle_data();
+    readyFlag = 0;
   }
-  
 }
 
 
 int main()
-{
-  stepperDriverDDRx |= (1<<dir) | (1<<en) | (1<<step); 
-  config();
-  Timer_config();
-  while(1);
+{ 
+  config(); 
+  TIMER_config();
+  stepperDriverDDRx |= (1<<dir) | (1<<step); 
+
+  while(1) {
+    if(enterSleepMode) {
+      SLEEP_enter_power_down();
+    }
+  };
 }
 
 
-
-void stepperControlerNegatives(volatile _Bool *on){ 
-  
+void STP_control_negativ(volatile _Bool *on){ 
   dirLow;
   if(!(*on)){
     stepHigh;
@@ -109,7 +85,7 @@ void stepperControlerNegatives(volatile _Bool *on){
   }
 }
 
-void stepperControlerPositiv(volatile _Bool *on){ 
+void STP_control_positiv(volatile _Bool *on){ 
   dirHigh;
   if(!(*on)){
     stepHigh;
@@ -120,14 +96,13 @@ void stepperControlerPositiv(volatile _Bool *on){
   }
 }
 
-void Timer_config(){
+void TIMER_config(){
   sei(); // set Globale Interrupt Enable
-  Clock_Select_Description_for_a_Timer_Counter_n2(0,8);
-  PWM_CONFIG_TIMER_CLOCK_1_OCR1A_SEVRO_CONTINUSE(); 
-  TCCR0 |= (1<<WGM01);
-  TIMSK |= (1<<OCIE0);
-  uint16_t top = 5;
-  OCR0 = top;
+  SERVO_config_timer1_c(); 
+  TCCR2 |= (1<<WGM21);
+  TIMSK |= (1<<OCIE2);
+  uint16_t top = TIMER2_TOP;
+  OCR2 = top;
 }
 
 void config(){
@@ -135,4 +110,21 @@ void config(){
   sei();
   SET_SLAVE_ADRESS_7BIT(18);
   TWCR = (1<<TWEA)|(1<<TWEN)|(1<<TWIE)|(1<<TWINT);
+}
+
+void STP_handle_data() {
+  if(recivedData >= 800) {
+    STP_control_positiv(&on);
+    reset = 1;
+  } else if(recivedData <= 200) {
+    STP_control_negativ(&on);
+    reset = 1;
+  } else {
+    if(reset) {
+      dirLow;
+      stepLow;
+      on = 0;
+      reset = 0;
+    }   
+  };
 }

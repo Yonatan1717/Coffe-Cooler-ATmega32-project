@@ -4,9 +4,7 @@
 #include <stdlib.h>
 #include <util/delay.h>
 
-#define ADC_Noise_Reduse MCUCR = (1<<SM0) // side 32, tabell 13
-#define LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION_m(v_diff,PORT_NAME, PORTs)LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(v_diff, &PORT_NAME,PORTs)
-#define ADC_SINGLE_Vinput_RESULT ((ADCH<<8) | (ADCL))
+#define ADC_ACTIVATE_PORTS_USING_ADC(v_diff,PORT_NAME, PORTs) ADC_activate_ports_using_adc(v_diff, &PORT_NAME,PORTs)
 #define ADC_STATUS (ADCSRA & (1<<ADSC))
 
 // 1
@@ -22,18 +20,18 @@ void ADC_Prescaler_Selections(uint8_t bit){
 
 
 // 2
-void Input_Channel_and_Gain_Selection_Set_ADMUX_bits(uint8_t ADMUX_bits[]){
+void ADMUX_set(uint8_t ADMUX_bits[]){
     // side 214, tabell 84, kan også brukes til å aktivere alle andre bits i ADMUX
     ADMUX &= 0xF0;
     for(uint8_t i = 0; (ADMUX_bits[i] != 0 || i == 0) && i<8; i++) ADMUX |= (1<<ADMUX_bits[i]);
 }
 // 3
-void Input_Channel_and_Gain_Selection_Clear_ADMUX_bits(uint8_t ADMUX_bits[]){
+void ADMUX_clear(uint8_t ADMUX_bits[]){
     // side 214, tabell 84, kan også brukes til å deaktivere alle andre bits i ADMUX
-    for(uint8_t i = 0; (ADMUX_bits[i] != 0 || i == 0) && i<8; i++) ADMUX ^= (1<<ADMUX_bits[i]);
+    for(uint8_t i = 0; (ADMUX_bits[i] != 0 || i == 0) && i<8; i++) ADMUX &= ~(1<<ADMUX_bits[i]);
 }
 // 4
-void ADC_Auto_Trigger_Enables_A_Lot_Of_Things_uT0(uint16_t prescaler, uint16_t timeintervall_ms){
+void ADC_adate_timer0(uint16_t prescaler, uint16_t timeintervall_ms){
     ///     Sets T0 CTC mode and calculates OCRn value for compare match      ///
 
     //side 80, Table 38.
@@ -60,19 +58,17 @@ void ADC_Auto_Trigger_Enables_A_Lot_Of_Things_uT0(uint16_t prescaler, uint16_t t
 int16_t ADC_differencial(uint16_t Vref, uint8_t bitsUsed_10_or_8){
     // side 217
     
-    //add lavere byte av resultat til ADC 
-    int16_t ADC_resultat = ADCL;
-    //add høyre byte av resultat til ADC
-    ADC_resultat |= (ADCH<<8);
+    //add høyre og lavere byte av resultat til ADC 
+    int16_t ADC_resultat = (ADCH <<8) | ADCL;
 
-    if ((ADC_resultat & (1<<9))) ADC_resultat |= (0b11111100 <<8);
+    if ((ADC_resultat & (1<<9))) ADC_resultat |= 0xFC00;
     
     int16_t Vdiff =  ((ADC_resultat + 0.5) * Vref) / (512);
     
     return Vdiff;
 }
 // 6
-void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile uint8_t *PORT_NAME,uint8_t PORT_NAMES[]){
+void ADC_activate_ports_using_adc(int16_t V_Difference, volatile uint8_t *PORT_NAME,uint8_t PORT_NAMES[]){
     //ADDS 2500 to V_difference since SWITCH statements can't be zero
     uint8_t difference = round(((V_Difference+2500)/1000));
 
@@ -93,16 +89,21 @@ void LED_ACTIVATE_DESIRED_PORTS_ADC_CONVERSION(int16_t V_Difference, volatile ui
             *PORT_NAME = (1<<PORT_NAMES[4]);
             break;
         default:
-            ACTIVATE_OUTPUT_PORTS(PORT_NAME,PORT_NAMES);
+            ACTIVATE_output_ports(PORT_NAME,PORT_NAMES);
             break;
         }
 }
 
 
-
+void SLEEP_enter_adc() {
+    set_sleep_mode(SLEEP_MODE_ADC);
+    sleep_enable();
+    sei();           // Enable global interrupts
+    sleep_disable(); // Immediately disable after waking
+}
 
 // 9
-void ADC_AUTO_TRIGGER_FREERUNNING_MODE(){
+void ADC_adate_freerunning(){
     sei();
     ADCSRA |= (1<<ADEN) | (1<<ADIE) | (1<<ADSC) | (1<<ADATE);
     SFIOR &= ~(1 << ADTS2 | 1 << ADTS1 | 1 << ADTS0);
