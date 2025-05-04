@@ -105,13 +105,15 @@ int main(){
   INT0_config_onlow();
   INT1_config_onlow();
   // INT2_config_onlow();
-  while(1) {
-    // if(sleepStatusAdc) {
-    //   SLEEP_enter_adc();
-    // } else {
-    //   SLEEP_enter_power_down();
-    // }
-  };
+      
+      while(1) {
+        if(sleepStatusAdc) {
+          SLEEP_enter_adc();
+        } else {
+          SLEEP_enter_power_down();
+        }
+      };
+
 }
 
 
@@ -120,7 +122,7 @@ int main(){
 
 
 void setup() {
-  config(); 
+  config();  
   ADC_config();
   DB_config_timer2();
   DDRB |= (1<<PB2) |(1<<PB0) |(1<<PB1); 

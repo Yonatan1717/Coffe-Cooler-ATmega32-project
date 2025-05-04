@@ -6,11 +6,15 @@
 #include <util/delay.h>
 
 
-
-void USART_config()
+void USART_config(_Bool type)
 {
-  sei();
-  UCSRB = (1<<RXEN) | (1<<TXEN) | (1<<RXCIE);
+  if(type) {
+    sei();
+    UCSRB = (1<<RXEN) | (1<<TXEN) | (1<<RXCIE);
+  } else {
+    UCSRB = (1<<RXEN) | (1<<TXEN);
+  }
+  
 }
 
 void USART_sendData(uint8_t data){

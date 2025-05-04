@@ -132,8 +132,28 @@ void DB_stop_timer(uint8_t timer_clock_id) {
     TIMER_perscalar_selct(timer_clock_id, 0);
 }
 
-void DB_config_timer2(){
+void DB_config_timer(uint8_t id){
     // Configure Timer2 in CTC mode for debounce interval (~5ms)
+    switch (id)
+    {
+    case 0:
+        TCCR2 |= (1<<WGM01);
+        TIMSK |= (1<<OCIE0);
+        OCR0 = (uint8_t) 20;
+        break;
+    case 1:
+        TCCR1A |= (1<<WGM11);
+        TIMSK |= (1<<OCIE1A);
+        OCR1A = (uint8_t) 20;
+        break;
+    case 2: 
+        TCCR2 |= (1<<WGM21);
+        TIMSK |= (1<<OCIE2);
+        OCR2 = (uint8_t) 20;
+        break;
+    default:
+        break;
+    }
     TCCR2 |= (1<<WGM21);
     TIMSK |= (1<<OCIE2);
     OCR2 = (uint8_t) 20;
@@ -232,14 +252,14 @@ uint32_t SERVO_config_timer1_c(){
     return TOP;
 }
 
-// sleep modes
-void SLEEP_enter_power_down() {
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-    sleep_enable();
-    sei();           // Enable global interrupts
-    sleep_cpu();     // Enter sleep
-    sleep_disable(); // Immediately disable after waking
-}
+        // enter POWER DOWN sleep mode
+        void SLEEP_enter_power_down() {
+            set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+            sleep_enable();
+            sei();           // Enable global interrupts
+            sleep_cpu();     // Enter sleep
+            sleep_disable(); // Immediately disable after waking
+        }
 
 
 

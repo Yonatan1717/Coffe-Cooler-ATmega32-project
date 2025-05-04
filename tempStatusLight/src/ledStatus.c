@@ -30,27 +30,24 @@ ISR(USART_RXC_vect) {
     // turn off signal
     CLEAR_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
     // back to power down mode
-    SLEEP_enter_power_down();
   }
 }
 
 ISR(INT0_vect) {  
-  DB_start_timer();
+  DB_start_timer(1, 1024);
 } 
 
 ISR(TIMER2_COMP_vect) {
-  if ((PIND & (1<< PD2)) == 0) { 
-    TOGGLE_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
-  }  
-  DB_stop_timer();
+  TOGGLE_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
+  DB_stop_timer(1);
 }
 
 int main(){
-  USART_config();
+  USART_config(1);
   TIMER_config();
   FAN_POWER_DDRx |= (1<<FAN_POWER_PIN);
   INT0_config_onlow();
-  DB_config_timer2();
+  DB_config_timer(1);
   
   SLEEP_enter_power_down();
 

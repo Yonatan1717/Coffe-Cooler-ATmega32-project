@@ -37,7 +37,7 @@ ISR(ADC_vect) {
 
 int main(){
   // DDRD |= (1<<PD6)| (1<<PB5);
-  USART_config();
+  USART_config(0);
   
 
   SETUP();
