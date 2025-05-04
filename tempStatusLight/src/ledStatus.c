@@ -33,14 +33,14 @@ ISR(USART_RXC_vect) {
   }
 }
 
-ISR(INT0_vect) {  
-  DB_start_timer(1, 1024);
-} 
+      ISR(INT0_vect) {  
+        DB_start_timer(1, 1024);
+      } 
 
-ISR(TIMER2_COMP_vect) {
-  TOGGLE_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
-  DB_stop_timer(1);
-}
+      ISR(TIMER2_COMP_vect) {
+        TOGGLE_PORT(FAN_POWER_PORT, FAN_POWER_PIN); 
+        DB_stop_timer(1);
+      }
 
 int main(){
   USART_config(1);

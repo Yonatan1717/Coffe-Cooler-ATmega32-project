@@ -52,17 +52,17 @@ PORTCommand &= ~(1<<E); \
 _delay_us(1530);
 
 
-void PULS_CONTROL_ED(){
+void LCD_puls_control_ed(){
 	RS_RW_E_D;
 	E_WAIT_DISABLE_WAIT;
 }
 
-void PULS_CONTROL_DD(){
+void LCD_puls_control_dd(){
 	RS_RW_D_D;
 	E_WAIT_DISABLE_WAIT;
 }
 
-void SETUP(){
+void LCD_setup(){
 	//PB og PA porter
 	DDRCommand |= (1<<RS)|(1<<RW)|(1<<E);//Command ports as output
 	DDRData |= 0xFF; //Dataports as output
@@ -70,46 +70,46 @@ void SETUP(){
 	//
 }
 
-void FUNCTION_SET(){
+void LCD_function_set(){
 	PORTData = (1<<DB5)|(0b11100);
-	PULS_CONTROL_DD();
+	LCD_puls_control_dd();
 }
 
-void DISPLAY_ON_OFF(){
-	//Display on/off
+void LCD_display_on(){
+	//Display on
 	PORTData = (1<<DB3)|(0b100);
-	PULS_CONTROL_DD();
+	LCD_puls_control_dd();
 }
 
-void ENTRY_MODE(){
+void LCD_entry_mode(){
 	PORTData=(1<<DB2)|(0b10);
-	PULS_CONTROL_DD();
+	LCD_puls_control_dd();
 }
 
-void RETURN_HOME(){
+void LCD_return_home(){
 	PORTData = (1<<DB1);
-	PULS_CONTROL_DD();
+	LCD_puls_control_dd();
 }
 
-void CLEAR_DISPLAY(){
+void LCD_clear_display(){
 	PORTData = (1<<DB0);
-	PULS_CONTROL_DD();
+	LCD_puls_control_dd();
 }
 
-void WRITE_STRING(char *str, uint8_t addr){
+void LCD_write_string(char *str, uint8_t addr){
 	PORTData = (1<<DB7)|(addr);
-	PULS_CONTROL_DD();
+	LCD_puls_control_dd();
 	
 	while(*str){
 		PORTData = *str++;
-		PULS_CONTROL_ED();
+		LCD_puls_control_ed();
 	}
 }
 
-void WRITE_NUMBER(int Number, uint8_t addr){
+void LDC_write_number(int Number, uint8_t addr){
 	//DDRAM_Adress
 	PORTData = (1<<DB7)|(addr);
-	PULS_CONTROL_DD();
+	LCD_puls_control_dd();
 
 	char buffer[16];
 
@@ -117,49 +117,49 @@ void WRITE_NUMBER(int Number, uint8_t addr){
 	int i = 0;
 	while(buffer[i]){
 		PORTData= buffer[i];
-		PULS_CONTROL_ED();
+		LCD_puls_control_ed();
 		++i;
 	}
 }
 
-void WRITE_STRING_noAddr(char *str){
+void LDC_write_string_no_addr(char *str){
 	while(*str){
 		PORTData = *str++;
-		PULS_CONTROL_ED();
+		LCD_puls_control_ed();
 	}
 }
 
-void WRITE_NUMBER_noAddr(int Number){
+void LDC_write_number_no_addr(int Number){
 	char buffer[16];
 
 	itoa(Number,buffer,10);
 	int i = 0;
 	while(buffer[i]){
 		PORTData= buffer[i];
-		PULS_CONTROL_ED();
+		LCD_puls_control_ed();
 		++i;
 	}
 }
 
-void WRITE_STRING_SINGLE(char charcter, uint8_t addr){
+void LCD_write_character(char charcter, uint8_t addr){
 	PORTData = (1<<DB7)|(addr);
 	PORTData = charcter;
-	PULS_CONTROL_ED();
+	LCD_puls_control_ed();
 }
 
-void WRITE_STRING_SINGLE_noAddr(char charcter){
+void LCD_write_character_no_addr(char charcter){
 	PORTData = charcter;
-	PULS_CONTROL_ED();
+	LCD_puls_control_ed();
 }
 
-void SEND_COMMAND(uint8_t cmnd){
+void LCD_send_command(uint8_t cmnd){
 	PORTData = cmnd;
-	PULS_CONTROL_DD();
+	LCD_puls_control_dd();
 
 }
 
-void WRAP_AROUND(uint8_t len, uint8_t start){
-			SEND_COMMAND(0x1c);
+void LCD_wrap_aroun_effect(uint8_t len, uint8_t start){
+			LCD_send_command(0x1c);
 
 			static _Bool first = 1;
 			static uint8_t counter = 16;
@@ -173,7 +173,7 @@ void WRAP_AROUND(uint8_t len, uint8_t start){
 				compare=0;
 				for (int i=0;i<(40-len-16);i++)
 				{
-					SEND_COMMAND(0x1c);
+					LCD_send_command(0x1c);
 				}
 				counter = 16+len;
 			}

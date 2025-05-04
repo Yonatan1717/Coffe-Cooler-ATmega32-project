@@ -7,20 +7,20 @@
 
 int main(){
 
-    SETUP();
-    FUNCTION_SET();
-    DISPLAY_ON_OFF();
-    CLEAR_DISPLAY();
-    ENTRY_MODE();
+    LCD_setup();
+    LCD_function_set();
+    LCD_display_on();
+    LCD_clear_display();
+    LCD_entry_mode();
     //testing
     
     
-    WRITE_STRING("Booting up", 0x00);
+    LCD_write_string("Booting up", 0x00);
     _delay_ms(1000);
-    CLEAR_DISPLAY();
+    LCD_clear_display();
 
-    WRITE_STRING("BP: Stavanger",0x00);
-    WRITE_STRING("BD: 10.10.1010", 0x40);
+    LCD_write_string("BP: Stavanger",0x00);
+    LCD_write_string("BD: 10.10.1010", 0x40);
         
     while(1);
     return 0;

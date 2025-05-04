@@ -217,22 +217,22 @@ void INT1_config_onlow() {
 ///////////////////// for servo motor ////////////////////////
 
 // 9
-uint32_t SERVO_config_timer1_nc(uint8_t type_0_fast_1_phase_correct, uint16_t frequency, uint16_t prescaler){
-    uint32_t TOP = 0;
-    if(!type_0_fast_1_phase_correct){
-        TCCR1A |= (1<<WGM11);
-        TCCR1B |= (1<<WGM12) | (1<<WGM13);
-        TCCR1A |= (1<<COM1A1); TCCR1A &= ~(1<<COM1A0);
-        DDRD |= (1<<PD5);
-    
-        TIMER_perscalar_selct(1,1);
-        TOP = round((F_CPU/(prescaler*frequency)) - 1);
-        ICR1 = TOP;
-        SERVO_MIDDLE(OCR1A);
-    }
 
-    return TOP;
-}
+        uint32_t SERVO_config_timer1_nc(uint16_t frequency, uint16_t prescaler){
+            uint32_t TOP = 0;
+
+            TCCR1A |= (1<<WGM11);
+            TCCR1B |= (1<<WGM12) | (1<<WGM13);
+            TCCR1A |= (1<<COM1A1); TCCR1A &= ~(1<<COM1A0);
+            DDRD |= (1<<PD5);
+
+            TIMER_perscalar_selct(1,1);
+            TOP = round((F_CPU/(prescaler*frequency)) - 1);
+            ICR1 = TOP;
+            SERVO_MIDDLE(OCR1A);
+
+            return TOP;
+        }
 
 // 10
 uint32_t SERVO_config_timer1_c(){
@@ -240,7 +240,7 @@ uint32_t SERVO_config_timer1_c(){
     
     TCCR1A |= (1<<WGM11);
     TCCR1B |= (1<<WGM12) | (1<<WGM13);
-    TCCR1A |= (1<<COM1A1); TCCR1A &= ~(1<<COM1A0);
+    TCCR1A |= (1<<COM1A1z); TCCR1A &= ~(1<<COM1A0);
     DDRD |= (1<<PD5);
 
     TIMER_perscalar_selct(1,1);
